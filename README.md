@@ -21,7 +21,6 @@ preferences, and carousel settings.
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [How do I contribute?](#how-do-i-contribute)
 - [Tech Stack Overview](#tech-stack-overview)
 - [Getting Started Locally](#getting-started-locally)
   - [Nix development shell](#nix-development-shell)
@@ -39,20 +38,6 @@ preferences, and carousel settings.
   - [Testing and checks](#testing-and-checks)
   - [Sending a Pull Request](#sending-a-pull-request)
 - [License](#license)
-
-## How do I contribute?
-
-**There is no barrier to contribution!**
-
-- If you would like to improve the application, please read the local setup and
-  project layout sections below.
-- If you find a bug, include the desktop environment, display server, AWWW
-  version, and the relevant application output in a GitHub issue.
-- If you want to propose a new carousel preset or transition, include an
-  example equation or a short description of the intended visual result.
-
-Small, focused pull requests are easiest to review. Please run the production
-build and relevant checks before opening a pull request.
 
 ## Tech Stack Overview
 
