@@ -1,0 +1,21 @@
+.carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+
+  background: #111111;
+}
+
+.carousel canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-layout-error { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; padding: 32px; color: #d6dacb; text-align: center; background: #131411; font-size: 13px; line-height: 1.6; pointer-events: none; }

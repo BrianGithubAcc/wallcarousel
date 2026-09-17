@@ -1,0 +1,354 @@
+.carousel-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.carousel-config-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(260px, 340px);
+
+  gap: 16px;
+
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+.carousel-preview-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  min-width: 0;
+  width: 100%;
+}
+
+.carousel-settings-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+.config-box {
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  border: 1px solid #292c34;
+  border-radius: 12px;
+
+  background: #17191f;
+}
+
+.config-box-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #292c34;
+}
+
+.config-box-header h2 {
+  margin: 0;
+
+  font-size: 15px;
+}
+
+.config-box-header p {
+  margin: 4px 0 0;
+
+  color: #858995;
+
+  font-size: 12px;
+}
+
+/*
+ * ============================================================
+ * PREVIEW
+ * ============================================================
+ */
+
+.preview-box {
+  min-width: 0;
+}
+
+.carousel-preview {
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 16 / 9;
+
+  min-height: 220px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: #0d0f13;
+}
+
+.carousel-preview > .carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+.carousel-preview canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.carousel-empty {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+
+  text-align: center;
+}
+
+.carousel-empty h3 {
+  margin: 0 0 8px;
+}
+
+.carousel-empty p {
+  max-width: 360px;
+
+  margin: 0;
+
+  color: #858995;
+
+  font-size: 13px;
+}
+
+/*
+ * ============================================================
+ * EQUATION GRAPH
+ * ============================================================
+ */
+
+.equation-box {
+  min-width: 0;
+}
+
+.equation-graph-container {
+  position: relative;
+
+  width: 100%;
+  height: 360px;
+
+  min-width: 0;
+  min-height: 280px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+}
+
+.equation-graph-container
+.equation-graph {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/*
+ * ============================================================
+ * SETTINGS
+ * ============================================================
+ */
+
+.equation-label {
+  display: block;
+
+  padding: 14px 16px 6px;
+
+  color: #858995;
+
+  font-size: 12px;
+}
+
+.equation-input {
+  display: block;
+
+  width: calc(100% - 32px);
+
+  margin: 0 16px 14px;
+
+  padding: 10px 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #363944;
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #0d0f13;
+  color: #f1f1f1;
+
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.equation-input:focus {
+  border-color: #777;
+}
+
+.equation-help {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 0 16px 16px;
+}
+
+.equation-help strong {
+  margin-bottom: 4px;
+
+  color: #858995;
+
+  font-size: 11px;
+}
+
+.equation-help button {
+  padding: 6px 8px;
+
+  border: 0;
+  border-radius: 5px;
+
+  text-align: left;
+
+  background: transparent;
+  color: #c5c7ce;
+
+  cursor: pointer;
+}
+
+.equation-help button:hover {
+  background: #242730;
+}
+
+.setting-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  min-height: 42px;
+
+  padding: 0 16px;
+
+  box-sizing: border-box;
+
+  color: #c5c7ce;
+
+  font-size: 13px;
+}
+
+.setting-row input[type="range"] {
+  width: 120px;
+
+  min-width: 0;
+}
+
+.setting-row input[type="color"] {
+  width: 38px;
+  height: 26px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+}
+
+/*
+ * ============================================================
+ * SMALL WINDOWS
+ * ============================================================
+ */
+
+@media (max-width: 900px) {
+  .carousel-config-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .carousel-settings-column {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(240px, 1fr)
+      );
+
+    align-items: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-preview {
+    min-height: 180px;
+  }
+
+  .equation-graph-container {
+    height: 280px;
+    min-height: 240px;
+  }
+
+  .carousel-settings-column {
+    display: flex;
+  }
+}

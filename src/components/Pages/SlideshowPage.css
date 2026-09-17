@@ -1,0 +1,23 @@
+.slideshow-page { overflow-y: auto; scrollbar-color: #53584a #171815; scrollbar-width: thin; }
+.slideshow-content { width: 100%; padding: 28px; }
+.slideshow-editor { display: grid; grid-template-columns: minmax(340px, .85fr) minmax(0, 1.4fr); align-items: start; gap: 24px; }
+.slideshow-badge { padding: 6px 12px; border-radius: 20px; background: #292c25; color: #a0a39a; }
+.slideshow-badge.running { background: #35412a; color: #dce5c5; }
+.slideshow-content fieldset { margin: 0 0 24px; padding: 20px; border: 1px solid #41443b; border-radius: 6px; }
+.slideshow-content legend { padding: 0 8px; color: #dce5c5; }
+.slideshow-content label { display: flex; flex-direction: column; gap: 8px; color: #c5c8be; }
+.slideshow-content input[type="number"], .slideshow-content select { width: 100%; padding: 10px; border-radius: 4px; }
+.slideshow-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.slideshow-interval { display: flex; flex-direction: column; gap: 8px; }
+.slideshow-interval-inputs { display: grid; grid-template-columns: minmax(60px, 1fr) minmax(95px, 1.2fr); gap: 8px; }
+.slideshow-interval-inputs > * { min-width: 0; }
+.slideshow-content .slideshow-check { flex-direction: row; align-items: center; }
+.slideshow-hint { color: #a0a39a; line-height: 1.6; font-size: 12px; }
+.slideshow-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.slideshow-actions button { padding: 10px 16px; border: 1px solid #484d40; border-radius: 4px; background: #292e23; color: #e0e8cf; cursor: pointer; }
+.slideshow-actions .slideshow-primary { background: #b7c58c; color: #171815; border-color: #b7c58c; }
+.slideshow-actions button:disabled { opacity: .45; cursor: default; }
+.slideshow-status { padding-top: 12px; color: #dce5c5; overflow-wrap: anywhere; }
+.slideshow-error { padding: 12px; background: #3b2424; color: #f1b8b8; border-radius: 4px; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .slideshow-fields { grid-template-columns: 1fr; } .app-tabs { padding: 0 8px; } .app-tabs button { padding: 0 9px; } }
+@media (max-width: 960px) { .slideshow-editor { grid-template-columns: minmax(0, 1fr); } }

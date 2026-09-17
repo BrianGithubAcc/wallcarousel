@@ -1,0 +1,2881 @@
+.app {
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #111;
+  color: #eee;
+}
+
+.app-content {
+  flex: 1;
+  min-height: 0;
+
+  overflow: hidden;
+
+  position: relative;
+}
+
+/* ------------------------------
+   Tabs
+   ------------------------------ */
+
+.app-tabs {
+  height: 56px;
+  min-height: 56px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 20px;
+
+  background: #181818;
+  border-bottom: 1px solid #2a2a2a;
+
+  position: relative;
+  z-index: 100;
+}
+
+.app-tabs button {
+  height: 100%;
+
+  padding: 0 20px;
+
+  border: 0;
+  background: transparent;
+
+  color: #777;
+
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+.app-tabs button:hover {
+  color: #ddd;
+}
+
+.app-tabs button.active {
+  color: #fff;
+  background: #222;
+}
+
+/* ------------------------------
+   Generic pages
+   ------------------------------ */
+
+.page {
+  width: 100%;
+  height: 100%;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+.page-header {
+  height: 76px;
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 28px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #292929;
+}
+
+.page-header h1 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+
+  color: #777;
+
+  font-size: 12px;
+}
+
+/* ------------------------------
+   Image page
+   ------------------------------ */
+
+.images-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.images-layout {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+
+  overflow: hidden;
+}
+
+/* ------------------------------
+   Playlist sidebar
+   ------------------------------ */
+
+.playlist-sidebar {
+  width: 220px;
+  min-width: 220px;
+
+  padding: 20px 12px;
+
+  box-sizing: border-box;
+
+  background: #151515;
+  border-right: 1px solid #292929;
+
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  padding: 0 10px 10px;
+
+  color: #666;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.playlist-item {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px;
+
+  margin-bottom: 3px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #999;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.playlist-item:hover {
+  background: #202020;
+  color: #ddd;
+}
+
+.playlist-item.active {
+  background: #292929;
+  color: #fff;
+}
+
+.playlist-count {
+  color: #666;
+  font-size: 11px;
+}
+
+.new-playlist {
+  width: 100%;
+
+  margin-top: 12px;
+  padding: 9px 10px;
+
+  border: 1px dashed #333;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #777;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.new-playlist:hover {
+  border-color: #555;
+  color: #bbb;
+}
+
+/* ------------------------------
+   Library
+   ------------------------------ */
+
+.library-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.library-header {
+  flex: 0 0 auto;
+
+  padding: 20px 24px 14px;
+}
+
+.library-header h2 {
+  display: inline;
+
+  margin: 0;
+
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.library-header span {
+  margin-left: 10px;
+
+  color: #666;
+
+  font-size: 12px;
+}
+
+.library-grid {
+  flex: 1;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding: 0 24px 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(180px, 1fr)
+    );
+
+  gap: 16px;
+
+  align-content: start;
+}
+
+/* ------------------------------
+   Library cards
+   ------------------------------ */
+
+.library-card {
+  min-width: 0;
+
+  border: 1px solid #292929;
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  background: #181818;
+}
+
+.library-thumbnail {
+  aspect-ratio: 16 / 9;
+
+  background: #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail-placeholder {
+  width: 70%;
+  height: 70%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #444;
+
+  color: #555;
+
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.library-card-info {
+  padding: 10px;
+}
+
+.library-card-name {
+  display: block;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  color: #bbb;
+
+  font-size: 12px;
+}
+
+/* ------------------------------
+   Empty library
+   ------------------------------ */
+
+.library-empty {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  color: #666;
+}
+
+.empty-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  border: 1px solid #333;
+  border-radius: 8px;
+
+  color: #777;
+
+  font-size: 24px;
+}
+
+.library-empty h3 {
+  margin: 0 0 6px;
+
+  color: #aaa;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.library-empty p {
+  max-width: 300px;
+
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.library-thumbnail {
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  background: #222;
+}
+
+.library-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  user-select: none;
+  -webkit-user-drag: none;
+
+  transition:
+    transform 180ms ease;
+}
+
+.library-card:hover
+.library-thumbnail img {
+  transform: scale(1.025);
+}
+
+/* Keep every page inside the Tauri window */
+
+.carousel-page {
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.carousel-preview {
+  position: relative;
+
+  width: 100%;
+  height: auto;
+
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* Wallpaper library grid */
+
+.library-grid {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 0 24px 24px;
+
+  display: grid;
+
+  /*
+   * Never make a wallpaper card smaller than 220px.
+   *
+   * auto-fill determines how many columns fit.
+   */
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(220px, 1fr)
+    );
+
+  gap: 16px;
+
+  align-content: start;
+}
+
+/*
+ * Keep the wallpaper cards from becoming
+ * excessively wide on very large windows.
+ */
+.library-card {
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #292929;
+  border-radius: 8px;
+
+  background: #181818;
+}
+
+/*
+ * 16:9 preview area.
+ */
+.library-thumbnail {
+  width: 100%;
+
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  background: #222;
+}
+
+.library-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Wallpaper library */
+
+.library-grid {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: auto;
+
+  padding: 0 24px 24px;
+
+  display: grid;
+
+  /*
+   * Each card must be at least:
+   *
+   *   240px wide
+   *   135px high (16:9)
+   *
+   * auto-fill determines X.
+   * The number of rows determines Y.
+   */
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(240px, 1fr)
+    );
+
+  grid-auto-rows: minmax(
+    180px,
+    auto
+  );
+
+  gap: 16px;
+
+  align-content: start;
+  justify-content: start;
+}
+
+.library-card {
+  /*
+   * Hard minimum dimensions.
+   */
+  min-width: 240px;
+  min-height: 180px;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  border: 1px solid #292929;
+  border-radius: 8px;
+
+  background: #181818;
+}
+
+.library-thumbnail {
+  /*
+   * The thumbnail itself also has a minimum
+   * height so it cannot collapse.
+   */
+  width: 100%;
+
+  min-width: 240px;
+  min-height: 135px;
+
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  background: #222;
+}
+
+.library-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.library-card-info {
+  min-height: 45px;
+
+  padding: 10px;
+
+  display: flex;
+  align-items: center;
+}
+
+/* --------------------------------
+   Performance: wallpaper library
+   -------------------------------- */
+
+.library-grid {
+  /*
+   * Let the grid itself be the scrolling surface.
+   */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /*
+   * Don't repaint the entire library when
+   * only a small part is visible.
+   */
+  contain: strict;
+
+  /*
+   * Tell the browser that cards outside the
+   * viewport don't need to be rendered yet.
+   */
+  content-visibility: auto;
+
+  /*
+   * Stable scrollbar behaviour.
+   */
+  overscroll-behavior: contain;
+
+  /*
+   * Prevent expensive browser selection
+   * work while rapidly scrolling.
+   */
+  user-select: none;
+
+  /*
+   * Avoid smooth scrolling here.
+   * Native scrolling should be immediate.
+   */
+  scroll-behavior: auto;
+}
+
+.library-card {
+  /*
+   * Each card is an independent rendering unit.
+   */
+  contain: layout paint style;
+
+  /*
+   * Cards outside the viewport can be skipped.
+   */
+  content-visibility: auto;
+
+  /*
+   * Required because content-visibility:auto needs
+   * an estimated size before the element is rendered.
+   */
+  contain-intrinsic-size: 180px;
+}
+
+.library-thumbnail {
+  /*
+   * Explicit dimensions prevent the browser from
+   * repeatedly calculating layout from the original
+   * 4K image dimensions.
+   */
+  width: 100%;
+  height: 135px;
+
+  min-width: 240px;
+  min-height: 135px;
+
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  background: #222;
+
+  contain: strict;
+}
+
+.library-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  /*
+   * Never let the source image determine layout.
+   */
+  max-width: none;
+
+  object-fit: cover;
+
+  /*
+   * Don't animate large images while scrolling.
+   */
+  transition: none;
+
+  /*
+   * Prevent browser drag/selection processing.
+   */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * Remove the previous hover zoom.
+ */
+.library-card:hover
+.library-thumbnail img {
+  transform: none;
+}
+
+.thumbnail-loading {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #202020;
+
+  color: #666;
+
+  font-size: 12px;
+
+  user-select: none;
+}
+
+/* ========================================
+   Virtual wallpaper grid
+   ======================================== */
+
+.virtual-image-grid {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  contain: strict;
+}
+
+.virtual-image-grid-content {
+  position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+}
+
+.virtual-image-row {
+  position: absolute;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 180px;
+
+  display: grid;
+
+  gap: 16px;
+
+  padding: 0 24px;
+
+  box-sizing: border-box;
+
+  min-width: 0;
+}
+
+.virtual-image-row .library-card {
+  min-width: 240px;
+  min-height: 180px;
+
+  height: 180px;
+
+  overflow: hidden;
+
+  border: 1px solid #292929;
+  border-radius: 8px;
+
+  background: #181818;
+
+  contain: layout paint style;
+}
+
+.virtual-image-row .library-thumbnail {
+  width: 100%;
+  height: 135px;
+
+  min-width: 0;
+  min-height: 135px;
+
+  overflow: hidden;
+
+  background: #222;
+
+  contain: strict;
+}
+
+.virtual-image-row .library-thumbnail img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.virtual-image-row .library-card-info {
+  height: 45px;
+  min-height: 45px;
+
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  overflow: hidden;
+}
+
+.virtual-image-row .library-card-name {
+  display: block;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thumbnail-loading {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #666;
+
+  background: #202020;
+
+  font-size: 12px;
+}
+
+.context-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.image-context-menu {
+  position: fixed;
+  z-index: 1000;
+
+  min-width: 190px;
+
+  padding: 6px;
+
+  background: #181818;
+  border: 1px solid #333;
+  border-radius: 8px;
+
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.45);
+}
+
+.context-menu-title {
+  padding: 8px 10px;
+
+  color: #888;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.image-context-menu button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 8px 10px;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+
+  color: #ddd;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.image-context-menu button:hover {
+  background: #292929;
+}
+
+.context-menu-empty {
+  padding: 10px;
+
+  color: #666;
+  font-size: 13px;
+}
+
+.new-playlist-form {
+  display: flex;
+  gap: 6px;
+
+  margin-top: 8px;
+}
+
+.new-playlist-form input {
+  min-width: 0;
+  width: 100%;
+
+  padding: 7px 8px;
+
+  border: 1px solid #333;
+  border-radius: 5px;
+
+  background: #181818;
+  color: #eee;
+
+  outline: none;
+}
+
+.new-playlist-form input:focus {
+  border-color: #666;
+}
+
+.new-playlist-form button {
+  padding: 7px 10px;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: #eee;
+  color: #111;
+
+  cursor: pointer;
+}
+.carousel-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.carousel-preview-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+
+.carousel-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #080808;
+  border: 1px solid #292929;
+}
+
+.carousel-preview .carousel {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-section {
+  margin-top: 14px;
+  min-height: 0;
+  flex: 1;
+}
+
+.equation-graph {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  overflow: hidden;
+  border: 1px solid #292929;
+  border-radius: 8px;
+  background: #0b0b0d;
+  perspective: 800px;
+}
+
+/*
+ * The graph plane can be switched
+ * completely off.
+ */
+.graph-plane {
+  position: absolute;
+  inset: 10%;
+  transform:
+    rotateX(58deg)
+    rotateZ(0deg);
+  transform-origin: center;
+  border: 1px solid #3a3a3a;
+  background:
+    linear-gradient(
+      rgba(255,255,255,0.055) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.055) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
+  transition:
+    opacity 160ms ease;
+}
+
+.graph-plane.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.graph-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.graph-grid.hidden {
+  display: none;
+}
+
+.graph-axis {
+  position: absolute;
+  background: rgba(255,255,255,0.5);
+}
+
+.graph-axis-x {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+}
+
+.graph-axis-y {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+
+.graph-axis-z {
+  left: 50%;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  transform:
+    rotate(-25deg);
+  transform-origin: left;
+}
+
+/*
+ * Temporary visual representation
+ * of the equation line.
+ *
+ * We can replace this with the actual
+ * Three.js graph renderer next.
+ */
+.graph-line {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 50%;
+  border-radius: 999px;
+  transform:
+    rotate(-8deg);
+  box-shadow:
+    0 0 8px currentColor;
+}
+
+.graph-centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform:
+    translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.graph-centre span {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform:
+    translateX(-50%);
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.graph-label {
+  position: absolute;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.graph-x {
+  right: 5%;
+  bottom: 5%;
+}
+
+.graph-y {
+  left: 5%;
+  top: 5%;
+}
+
+.graph-z {
+  right: 15%;
+  top: 45%;
+}
+
+.carousel-settings {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 18px;
+  border: 1px solid #292929;
+  border-radius: 8px;
+  background: #111214;
+}
+
+.settings-section {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #292929;
+}
+
+.settings-section:last-child {
+  border-bottom: 0;
+}
+
+.settings-section h2 {
+  margin: 0 0 14px;
+  font-size: 15px;
+}
+
+.settings-section label {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.settings-section label > span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+}
+
+.settings-section input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #363636;
+  border-radius: 6px;
+  background: #0b0b0c;
+  color: inherit;
+  outline: none;
+}
+
+.setting-help {
+  margin: -5px 0 0;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.colour-input {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px;
+}
+
+.colour-input input[type="color"] {
+  width: 42px;
+  height: 38px;
+  padding: 3px;
+  border: 1px solid #363636;
+  border-radius: 6px;
+  background: #0b0b0c;
+}
+
+.range-row {
+  display: grid;
+  grid-template-columns: 1fr 45px;
+  gap: 10px;
+  align-items: center;
+}
+
+.range-row output,
+.range-header output {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.range-row input,
+.range-setting input[type="range"] {
+  width: 100%;
+}
+
+.range-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.toggle-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px !important;
+}
+
+.toggle-row > span {
+  margin: 0 !important;
+}
+
+.toggle-row.disabled {
+  opacity: 0.35;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #333;
+  cursor: pointer;
+}
+
+.toggle span {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  margin: 0;
+  border-radius: 50%;
+  background: white;
+  transition:
+    transform 150ms ease;
+}
+
+.toggle.active {
+  background: #8d45e8;
+}
+
+.toggle.active span {
+  transform:
+    translateX(18px);
+}
+
+.toggle:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 850px) {
+  .carousel-editor {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .carousel-settings {
+    overflow: visible;
+  }
+
+  .graph-section {
+    min-height: 300px;
+  }
+}
+/* =========================================================
+   CAROUSEL EDITOR
+   ========================================================= */
+
+.carousel-page {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.carousel-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEFT SIDE
+   ========================================================= */
+
+.carousel-preview-panel {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   SECTION TITLES
+   ========================================================= */
+
+.panel-title {
+  flex: 0 0 auto;
+
+  margin: 0 0 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: #a0a0a0;
+}
+
+
+/* =========================================================
+   CAROUSEL PREVIEW
+   ========================================================= */
+
+.carousel-preview {
+  position: relative;
+
+  width: 100%;
+
+  /*
+   * 16:9 monitor preview.
+   */
+  aspect-ratio: 16 / 9;
+
+  flex: 0 0 auto;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  background: #090909;
+
+  border: 1px solid #303030;
+  border-radius: 10px;
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+
+/*
+ * Three.js canvas must fill the preview.
+ */
+.carousel-preview .carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+.carousel-preview canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+
+/* =========================================================
+   EQUATION GRAPH
+   ========================================================= */
+
+.graph-section {
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * Space between monitor and graph.
+   */
+  margin-top: 14px;
+
+  /*
+   * Graph gets the remaining vertical space.
+   */
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 180px;
+
+  overflow: hidden;
+}
+
+
+.equation-graph {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 180px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #171719 0%,
+      #0c0c0e 70%
+    );
+
+  border: 1px solid #303030;
+  border-radius: 10px;
+
+  perspective: 900px;
+}
+
+
+/* =========================================================
+   3D GRAPH PLANE
+   ========================================================= */
+
+.graph-plane {
+  position: absolute;
+
+  /*
+   * Leave some space around the plane.
+   */
+  left: 8%;
+  right: 8%;
+  top: 10%;
+  bottom: 10%;
+
+  transform:
+    rotateX(58deg)
+    rotateZ(0deg);
+
+  transform-origin: center center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #3b3b3b;
+
+  background-color: #101012;
+
+  /*
+   * Perspective grid.
+   */
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.055) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.055) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    32px 32px;
+
+  transition:
+    opacity 160ms ease;
+}
+
+
+/*
+ * Plane OFF.
+ */
+.graph-plane.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   GRAPH GRID
+   ========================================================= */
+
+.graph-grid {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+}
+
+
+.graph-grid.hidden {
+  display: none;
+}
+
+
+/* =========================================================
+   GRAPH AXES
+   ========================================================= */
+
+.graph-axis {
+  position: absolute;
+
+  pointer-events: none;
+
+  background: rgba(255, 255, 255, 0.35);
+}
+
+
+/*
+ * X axis.
+ */
+.graph-axis-x {
+  left: 0;
+  right: 0;
+
+  top: 50%;
+
+  height: 1px;
+}
+
+
+/*
+ * Y axis.
+ */
+.graph-axis-y {
+  top: 0;
+  bottom: 0;
+
+  left: 50%;
+
+  width: 1px;
+}
+
+
+/*
+ * Z axis.
+ */
+.graph-axis-z {
+  left: 50%;
+  top: 50%;
+
+  width: 35%;
+  height: 1px;
+
+  transform:
+    rotate(-25deg);
+
+  transform-origin: left center;
+}
+
+
+/* =========================================================
+   EQUATION LINE
+   ========================================================= */
+
+.graph-line {
+  position: absolute;
+
+  left: 10%;
+  right: 10%;
+
+  top: 50%;
+
+  /*
+   * The transform here is only the temporary
+   * CSS representation.
+   *
+   * The real mathematical graph can replace this
+   * later with Three.js.
+   */
+  transform:
+    rotate(-8deg);
+
+  transform-origin: center;
+
+  border-radius: 999px;
+
+  box-shadow:
+    0 0 8px currentColor,
+    0 0 18px currentColor;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   GRAPH CENTRE
+   ========================================================= */
+
+.graph-centre {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.7);
+
+  pointer-events: none;
+}
+
+
+.graph-centre span {
+  position: absolute;
+
+  left: 50%;
+  top: 12px;
+
+  transform:
+    translateX(-50%);
+
+  font-size: 10px;
+
+  color: #999;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   GRAPH LABELS
+   ========================================================= */
+
+.graph-label {
+  position: absolute;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  color: #777;
+
+  pointer-events: none;
+}
+
+
+.graph-x {
+  right: 4%;
+  bottom: 4%;
+}
+
+
+.graph-y {
+  left: 4%;
+  top: 4%;
+}
+
+
+.graph-z {
+  right: 12%;
+  top: 42%;
+}
+
+
+/* =========================================================
+   RIGHT SETTINGS PANEL
+   ========================================================= */
+
+.carousel-settings {
+  width: 340px;
+  max-width: 340px;
+
+  min-width: 0;
+  min-height: 0;
+
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  padding: 18px;
+
+  background: #111214;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+
+  scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   SETTINGS SECTIONS
+   ========================================================= */
+
+.settings-section {
+  margin: 0 0 20px;
+  padding: 0 0 20px;
+
+  border-bottom: 1px solid #292929;
+}
+
+
+.settings-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+
+  border-bottom: 0;
+}
+
+
+.settings-section h2 {
+  margin: 0 0 14px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TEXT INPUTS
+   ========================================================= */
+
+.settings-section label {
+  display: block;
+
+  margin-bottom: 14px;
+}
+
+
+.settings-section label > span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 12px;
+
+  color: #aaa;
+}
+
+
+.settings-section input[type="text"] {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 9px 10px;
+
+  background: #09090a;
+
+  border: 1px solid #363636;
+  border-radius: 6px;
+
+  color: #eee;
+
+  outline: none;
+}
+
+
+.settings-section input[type="text"]:focus {
+  border-color: #666;
+}
+
+
+/* =========================================================
+   HELP TEXT
+   ========================================================= */
+
+.setting-help {
+  margin: -5px 0 0;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+  color: #666;
+}
+
+
+/* =========================================================
+   COLOUR PICKER
+   ========================================================= */
+
+.colour-input {
+  display: grid;
+
+  grid-template-columns: 42px minmax(0, 1fr);
+
+  gap: 8px;
+
+  width: 100%;
+}
+
+
+.colour-input input[type="color"] {
+  width: 42px;
+  height: 38px;
+
+  padding: 3px;
+
+  box-sizing: border-box;
+
+  background: #09090a;
+
+  border: 1px solid #363636;
+  border-radius: 6px;
+}
+
+
+.colour-input input[type="text"] {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   RANGE CONTROLS
+   ========================================================= */
+
+.range-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    45px;
+
+  gap: 10px;
+
+  align-items: center;
+}
+
+
+.range-row input,
+.range-setting input[type="range"] {
+  width: 100%;
+}
+
+
+.range-row output,
+.range-header output {
+  font-size: 11px;
+
+  text-align: right;
+
+  color: #777;
+}
+
+
+.range-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 6px;
+}
+
+
+/* =========================================================
+   TOGGLES
+   ========================================================= */
+
+.toggle-row {
+  display: flex !important;
+
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  margin-bottom: 10px !important;
+}
+
+
+.toggle-row > span {
+  margin: 0 !important;
+}
+
+
+.toggle-row.disabled {
+  opacity: 0.35;
+}
+
+
+.toggle {
+  position: relative;
+
+  width: 40px;
+  height: 22px;
+
+  flex: 0 0 auto;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: #343434;
+
+  cursor: pointer;
+}
+
+
+.toggle span {
+  position: absolute;
+
+  left: 3px;
+  top: 3px;
+
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  border-radius: 50%;
+
+  background: #fff;
+
+  transition:
+    transform 150ms ease;
+}
+
+
+.toggle.active {
+  background: #8d45e8;
+}
+
+
+.toggle.active span {
+  transform:
+    translateX(18px);
+}
+
+
+.toggle:disabled {
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 950px) {
+  .carousel-editor {
+    grid-template-columns:
+      minmax(0, 1fr)
+      300px;
+  }
+
+  .carousel-settings {
+    width: 300px;
+    max-width: 300px;
+  }
+}
+
+
+@media (max-width: 750px) {
+  .carousel-page {
+    overflow-y: auto;
+  }
+
+  .carousel-editor {
+    grid-template-columns: 1fr;
+
+    height: auto;
+
+    overflow: visible;
+  }
+
+  .carousel-preview-panel {
+    overflow: visible;
+  }
+
+  .carousel-settings {
+    width: 100%;
+    max-width: none;
+
+    overflow: visible;
+  }
+
+  .graph-section {
+    min-height: 300px;
+  }
+}
+
+
+/* =========================================================
+   CAROUSEL EDITOR - CONTAINED LAYOUT
+   ========================================================= */
+
+.carousel-page {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+.carousel-editor {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    340px;
+
+  gap: 16px;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEFT HAND SIDE BOX
+   ========================================================= */
+
+.carousel-preview-panel {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+
+  box-sizing: border-box;
+
+  /*
+   * This is the important part.
+   *
+   * Preview + graph now live INSIDE this box.
+   */
+  padding: 16px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: #111214;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+
+  scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   PREVIEW
+   ========================================================= */
+
+.carousel-preview {
+  position: relative;
+
+  width: 100%;
+
+  /*
+   * Never let the monitor become ridiculously small.
+   */
+  min-width: 280px;
+
+  /*
+   * Always 16:9.
+   */
+  aspect-ratio: 16 / 9;
+
+  flex: 0 0 auto;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: #080808;
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+}
+
+
+.carousel-preview .carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+
+.carousel-preview canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+
+/* =========================================================
+   GRAPH
+   ========================================================= */
+
+.graph-section {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+
+  /*
+   * Don't use flex: 1 here.
+   *
+   * That was causing the graph to be pushed outside
+   * the available height on small windows.
+   */
+  flex: 0 0 auto;
+
+  min-width: 0;
+
+  margin-top: 14px;
+}
+
+
+.equation-graph {
+  position: relative;
+
+  width: 100%;
+
+  /*
+   * Give the graph an actual size.
+   */
+  height: 260px;
+
+  min-height: 220px;
+
+  flex: 0 0 260px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #18181b 0%,
+      #0b0b0d 75%
+    );
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+
+  perspective: 900px;
+}
+
+
+/* =========================================================
+   GRAPH PLANE
+   ========================================================= */
+
+.graph-plane {
+  position: absolute;
+
+  left: 8%;
+  right: 8%;
+
+  top: 10%;
+  bottom: 10%;
+
+  transform:
+    rotateX(58deg);
+
+  transform-origin: center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #3b3b3b;
+
+  background-color: #101012;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.055) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.055) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    32px 32px;
+
+  transition:
+    opacity 160ms ease;
+}
+
+
+.graph-plane.hidden {
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+
+.graph-grid {
+  position: absolute;
+
+  inset: 0;
+}
+
+
+.graph-grid.hidden {
+  display: none;
+}
+
+
+/* =========================================================
+   GRAPH AXES
+   ========================================================= */
+
+.graph-axis {
+  position: absolute;
+
+  background: rgba(255, 255, 255, 0.35);
+
+  pointer-events: none;
+}
+
+
+.graph-axis-x {
+  left: 0;
+  right: 0;
+
+  top: 50%;
+
+  height: 1px;
+}
+
+
+.graph-axis-y {
+  top: 0;
+  bottom: 0;
+
+  left: 50%;
+
+  width: 1px;
+}
+
+
+.graph-axis-z {
+  left: 50%;
+  top: 50%;
+
+  width: 35%;
+  height: 1px;
+
+  transform:
+    rotate(-25deg);
+
+  transform-origin: left center;
+}
+
+
+/* =========================================================
+   GRAPH LINE
+   ========================================================= */
+
+.graph-line {
+  position: absolute;
+
+  left: 10%;
+  right: 10%;
+
+  top: 50%;
+
+  height: 2px;
+
+  transform:
+    rotate(-8deg);
+
+  transform-origin: center;
+
+  border-radius: 999px;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   GRAPH CENTRE
+   ========================================================= */
+
+.graph-centre {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: white;
+
+  pointer-events: none;
+}
+
+
+.graph-centre span {
+  position: absolute;
+
+  top: 12px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  font-size: 10px;
+
+  color: #777;
+}
+
+
+/* =========================================================
+   GRAPH LABELS
+   ========================================================= */
+
+.graph-label {
+  position: absolute;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  color: #777;
+
+  pointer-events: none;
+}
+
+
+.graph-x {
+  right: 4%;
+  bottom: 4%;
+}
+
+
+.graph-y {
+  left: 4%;
+  top: 4%;
+}
+
+
+.graph-z {
+  right: 12%;
+  top: 42%;
+}
+
+
+/* =========================================================
+   RIGHT SETTINGS BOX
+   ========================================================= */
+
+.carousel-settings {
+  width: 340px;
+  max-width: 340px;
+
+  min-width: 0;
+  min-height: 0;
+
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  padding: 18px;
+
+  background: #111214;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+
+  scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   SMALL WINDOWS
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .carousel-editor {
+    grid-template-columns:
+      minmax(0, 1fr)
+      280px;
+  }
+
+  .carousel-settings {
+    width: 280px;
+    max-width: 280px;
+  }
+
+  .carousel-preview-panel {
+    padding: 12px;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  /*
+   * On very small windows stack the two boxes.
+   *
+   * The editor itself scrolls rather than allowing
+   * content to escape outside the application.
+   */
+  .carousel-page {
+    overflow-y: auto;
+  }
+
+  .carousel-editor {
+    display: flex;
+    flex-direction: column;
+
+    height: auto;
+
+    min-height: 100%;
+
+    overflow: visible;
+  }
+
+  .carousel-preview-panel {
+    width: 100%;
+
+    overflow: visible;
+  }
+
+  .carousel-settings {
+    width: 100%;
+    max-width: none;
+
+    overflow: visible;
+  }
+
+  .carousel-preview {
+    min-width: 0;
+  }
+
+  .equation-graph {
+    height: 240px;
+    min-height: 240px;
+  }
+
+}
+
+
+@media (max-height: 650px) and (min-width: 701px) {
+
+  /*
+   * Short desktop/laptop window.
+   *
+   * The left box gets its own scrollbar instead of
+   * pushing the graph outside the application.
+   */
+  .carousel-preview-panel {
+    overflow-y: auto;
+  }
+
+  .carousel-preview {
+    /*
+     * Keep the monitor usable without consuming
+     * the entire vertical window.
+     */
+    max-height: 48vh;
+  }
+
+  .equation-graph {
+    height: 220px;
+    min-height: 220px;
+    flex-basis: 220px;
+  }
+
+}
+
+
+/* =========================================================
+   REAL 3D EQUATION GRAPH
+   ========================================================= */
+
+.equation-graph {
+  position: relative;
+
+  width: 100%;
+  height: 260px;
+
+  min-height: 220px;
+
+  flex: 0 0 260px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: #0b0b0d;
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+
+  /*
+   * Three.js handles the perspective.
+   * Do NOT use CSS perspective here.
+   */
+  perspective: none;
+}
+
+.equation-graph canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  cursor: grab;
+}
+
+.equation-graph canvas:active {
+  cursor: grabbing;
+}
+
+@media (max-width: 700px) {
+  .equation-graph {
+    height: 240px;
+    min-height: 240px;
+    flex-basis: 240px;
+  }
+}
+
+@media (max-height: 650px) and (min-width: 701px) {
+  .equation-graph {
+    height: 220px;
+    min-height: 220px;
+    flex-basis: 220px;
+  }
+}
+
+
+.equation-graph {
+  position: relative;
+
+  width: 100%;
+  height: 260px;
+  min-height: 220px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: #0b0b0d;
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+
+  perspective: none;
+  transform: none;
+}
+
+.equation-graph canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  transform: none;
+
+  cursor: grab;
+}
+
+.equation-graph canvas:active {
+  cursor: grabbing;
+}
+
+@media (max-width: 700px) {
+  .equation-graph {
+    height: 240px;
+    min-height: 240px;
+  }
+}
+
+/* ============================================================
+   CAROUSEL CONFIGURATION PAGE
+   ============================================================ */
+
+.carousel-config-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(280px, 360px);
+
+  gap: 16px;
+
+  width: 100%;
+  min-width: 0;
+}
+
+.carousel-preview-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  min-width: 0;
+}
+
+.carousel-settings-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  min-width: 0;
+}
+
+.config-box {
+  min-width: 0;
+
+  overflow: hidden;
+
+  border-radius: 12px;
+
+  background: #17191f;
+  border: 1px solid #292c34;
+}
+
+.config-box-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  border-bottom: 1px solid #292c34;
+}
+
+.config-box-header h2 {
+  margin: 0;
+
+  font-size: 16px;
+}
+
+.config-box-header p {
+  margin: 4px 0 0;
+
+  color: #858995;
+
+  font-size: 12px;
+}
+
+/* ============================================================
+   CAROUSEL PREVIEW
+   ============================================================ */
+
+.preview-box {
+  min-width: 0;
+}
+
+.carousel-preview {
+  position: relative;
+
+  width: 100%;
+
+  /*
+   * 16:9 preview.
+   *
+   * This is the important bit that was missing.
+   */
+  aspect-ratio: 16 / 9;
+
+  min-height: 240px;
+
+  overflow: hidden;
+
+  background: #0d0f13;
+}
+
+.carousel-preview > .carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+.carousel-preview canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-empty {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 32px;
+
+  text-align: center;
+}
+
+.carousel-empty h3 {
+  margin: 0 0 8px;
+
+  font-size: 18px;
+}
+
+.carousel-empty p {
+  margin: 0;
+
+  max-width: 360px;
+
+  color: #858995;
+
+  font-size: 13px;
+}
+
+/* ============================================================
+   EQUATION GRAPH
+   ============================================================ */
+
+.equation-box {
+  min-width: 0;
+}
+
+.equation-graph-container {
+  position: relative;
+
+  width: 100%;
+
+  height: 360px;
+
+  min-height: 300px;
+
+  overflow: hidden;
+}
+
+.equation-graph-container
+  .equation-graph {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ============================================================
+   SMALL WINDOWS
+   ============================================================ */
+
+@media (max-width: 850px) {
+  .carousel-config-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .carousel-settings-column {
+    width: 100%;
+  }
+
+  .equation-graph-container {
+    height: 320px;
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-preview {
+    min-height: 200px;
+  }
+
+  .equation-graph-container {
+    height: 280px;
+    min-height: 240px;
+  }
+}

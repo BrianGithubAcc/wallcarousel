@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+AYATANA="$(
+  nix build \
+    --no-link \
+    --print-out-paths \
+    nixpkgs#libayatana-appindicator
+)"
+
+export LD_LIBRARY_PATH="$AYATANA/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+exec pnpm tauri dev

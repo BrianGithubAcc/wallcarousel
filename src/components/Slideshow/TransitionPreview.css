@@ -1,0 +1,13 @@
+.transition-preview { position: sticky; top: 24px; align-self: start; min-width: 0; padding: 18px; border: 1px solid #41443b; border-radius: 8px; background: #1c1e19; }
+.transition-preview-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.transition-preview-heading h2 { margin: 0; font-size: 14px; font-weight: 500; color: #e0e8cf; }
+.transition-preview-heading > span { padding: 3px 8px; border-radius: 12px; background: #30352a; color: #b7c58c; font-size: 11px; }
+.transition-preview-screen { overflow: hidden; border: 1px solid #4a4e42; border-radius: 6px; background: #141512; }
+.transition-preview-screen canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+.transition-preview-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.transition-preview-controls > span { color: #b4b8ac; font-size: 11px; }
+.transition-preview-controls button { border: 1px solid #626d4c; border-radius: 4px; padding: 8px 12px; background: #30352a; color: #e0e8cf; cursor: pointer; }
+.transition-preview-controls button:hover { background: #3b4430; }
+.transition-preview-controls button:disabled { opacity: .45; cursor: default; }
+.transition-preview-caption { margin: 12px 0 0; color: #a0a39a; font-size: 12px; line-height: 1.6; }
+@media (max-width: 960px) { .transition-preview { position: static; order: -1; } }

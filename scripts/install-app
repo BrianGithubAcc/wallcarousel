@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+app_dir="$HOME/.local/opt/wallcarousel"
+[[ -x build/wallcarousel/bin/wallcarousel ]] || { echo 'Run nix develop -c bash scripts/build-app first.' >&2; exit 1; }
+mkdir -p "$app_dir" "$HOME/.local/bin" "$HOME/.local/share/applications"
+cp -R build/wallcarousel/. "$app_dir/"
+ln -sfn "$app_dir/bin/wallcarousel" "$HOME/.local/bin/wallcarousel"
+cat > "$HOME/.local/share/applications/wallcarousel.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=Wallcarousel
+Comment=Wallpaper library and carousel
+Exec="$app_dir/bin/wallcarousel"
+Icon=$app_dir/share/icons/wallcarousel.png
+Terminal=false
+Categories=Utility;Graphics;
+StartupNotify=false
+DESKTOP
+# Keep the launcher's Nix runtime closure alive across garbage collection.
+if command -v nix-store >/dev/null; then
+  runtime_roots="$HOME/.local/share/wallcarousel/gcroots"
+  mkdir -p "$runtime_roots"
+  while IFS= read -r store_path; do
+    nix-store --add-root "$runtime_roots/$(basename "$store_path")" \
+      --realise "$store_path" >/dev/null
+  done < <(grep -oE '/nix/store/[0-9a-z]{32}-[^/:[:space:]"]+' "$app_dir/bin/wallcarousel" | sort -u)
+fi
+
+printf 'Installed %s/.local/bin/wallcarousel\n' "$HOME"

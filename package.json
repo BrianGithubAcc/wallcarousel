@@ -2,18 +2,27 @@
   "name": "wallcarousel",
   "private": true,
   "version": "0.0.0",
+  "repository": "https://github.com/BrianGithubAcc/wallcarousel",
+  "bugs": "https://github.com/BrianGithubAcc/wallcarousel/issues",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test:carousel": "node --experimental-strip-types --test scripts/test-carousel-layout.mjs",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "app:build": "tauri build --no-bundle",
+    "app:bundle": "tauri build --bundles appimage"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "~2.7.3",
+    "@tauri-apps/plugin-fs": "~2.5.2",
     "lucide-react": "^1.39.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -21,6 +30,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.1.0",
     "eslint": "^10.9.0",
     "eslint-plugin-react-hooks": "^7.1.1",

@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local application builds
+/build/
+/result
+/result-*
+.cache/
+coverage/
+
+# Local editor backups and scratch files
+*.bak
+*.bak-*
+*.backup
+*.backup-*
+*.before-*
+/span
+.direnv/

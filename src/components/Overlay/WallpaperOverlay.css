@@ -1,0 +1,416 @@
+html.wallpaper-overlay-document,
+html.wallpaper-overlay-document body,
+html.wallpaper-overlay-document #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  background: transparent !important;
+}
+
+.wallpaper-overlay-root {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+
+  background: transparent;
+
+  color: #f5f5f5;
+
+  user-select: none;
+}
+
+.wallpaper-overlay-dimmer {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    rgba(
+      42,
+      42,
+      46,
+      0.68
+    );
+
+  pointer-events: none;
+}
+
+.wallpaper-overlay-carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 2;
+}
+
+.wallpaper-overlay-carousel > .carousel {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+.wallpaper-overlay-carousel canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  cursor: pointer;
+}
+
+.wallpaper-overlay-header {
+  position: absolute;
+
+  z-index: 10;
+
+  top: 28px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding:
+    10px
+    18px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.13
+    );
+
+  border-radius: 12px;
+
+  background:
+    rgba(
+      10,
+      10,
+      12,
+      0.68
+    );
+
+  backdrop-filter:
+    blur(10px);
+
+  box-shadow:
+    0
+    10px
+    34px
+    rgba(
+      0,
+      0,
+      0,
+      0.28
+    );
+
+  pointer-events: none;
+}
+
+.wallpaper-overlay-header strong {
+  font-size: 14px;
+}
+
+.wallpaper-overlay-header span {
+  opacity: 0.68;
+
+  font-size: 12px;
+}
+
+.wallpaper-overlay-footer {
+  position: absolute;
+
+  z-index: 10;
+
+  bottom: 28px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 18px;
+
+  padding:
+    9px
+    16px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(
+      10,
+      10,
+      12,
+      0.66
+    );
+
+  backdrop-filter:
+    blur(10px);
+
+  font-size: 12px;
+
+  pointer-events: none;
+}
+
+.wallpaper-overlay-footer span + span::before {
+  content: "•";
+
+  margin-right:
+    14px;
+
+  opacity: 0.35;
+}
+
+.wallpaper-overlay-empty {
+  position: absolute;
+
+  z-index: 10;
+
+  top: 50%;
+  left: 50%;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 24px;
+
+  border-radius: 14px;
+
+  background:
+    rgba(
+      10,
+      10,
+      12,
+      0.72
+    );
+}
+
+.wallpaper-overlay-empty span {
+  opacity: 0.65;
+
+  font-size: 13px;
+}
+
+.wallpaper-overlay-error {
+  position: absolute;
+
+  z-index: 20;
+
+  right: 24px;
+  bottom: 24px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  max-width: 440px;
+
+  padding:
+    13px
+    16px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      90,
+      90,
+      0.35
+    );
+
+  border-radius: 10px;
+
+  background:
+    rgba(
+      35,
+      10,
+      10,
+      0.9
+    );
+
+  box-shadow:
+    0
+    12px
+    36px
+    rgba(
+      0,
+      0,
+      0,
+      0.4
+    );
+
+  pointer-events: none;
+}
+
+.wallpaper-overlay-error strong {
+  font-size: 13px;
+}
+
+.wallpaper-overlay-error span {
+  opacity: 0.8;
+
+  font-size: 12px;
+
+  white-space: pre-wrap;
+}
+
+
+/* ============================================================
+   FULLSCREEN DESKTOP OVERLAY
+   ============================================================ */
+
+html.wallpaper-overlay-document,
+html.wallpaper-overlay-document body,
+html.wallpaper-overlay-document #root {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  min-width: 100vw;
+  min-height: 100vh;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  background: transparent !important;
+}
+
+.wallpaper-overlay-root {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  min-width: 100vw;
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  background: transparent !important;
+}
+
+
+/*
+ * Grey glass layer.
+ *
+ * The translucent part lets the desktop and
+ * existing windows remain visible.
+ */
+.wallpaper-overlay-dimmer {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1;
+
+  width: 100vw;
+  height: 100vh;
+
+  background:
+    rgba(
+      39,
+      41,
+      47,
+      0.62
+    );
+
+  backdrop-filter:
+    blur(22px)
+    saturate(0.72)
+    brightness(0.82);
+
+  -webkit-backdrop-filter:
+    blur(22px)
+    saturate(0.72)
+    brightness(0.82);
+
+  pointer-events: none;
+}
+
+
+/*
+ * Carousel remains above the glass.
+ */
+.wallpaper-overlay-carousel {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 2;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+
+/*
+ * UI labels above everything.
+ */
+.wallpaper-overlay-header,
+.wallpaper-overlay-footer,
+.wallpaper-overlay-error,
+.wallpaper-overlay-empty {
+  z-index: 10;
+}
+
+/* Keep the picker chrome quiet so the wallpapers remain the focus. */
+.wallpaper-overlay-header,
+.wallpaper-overlay-footer,
+.wallpaper-overlay-empty {
+  border-radius: 4px;
+  background: rgba(23, 24, 21, 0.94);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.wallpaper-overlay-header { top: 20px; border-color: rgba(183, 197, 140, 0.2); }
+.wallpaper-overlay-header strong { font-weight: 500; color: #e0e8cf; }
+.wallpaper-overlay-footer { bottom: 20px; }

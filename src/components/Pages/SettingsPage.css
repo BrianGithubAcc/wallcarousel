@@ -1,0 +1,30 @@
+.settings-page { overflow-y: auto; scrollbar-color: #53584a #171815; scrollbar-width: thin; }
+.settings-dashboard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 28px; align-items: start; }
+.settings-card { min-width: 0; padding: 26px; border: 1px solid #3d4136; border-radius: 8px; background: #1c1e19; }
+.settings-card h2 { margin: 0 0 10px; color: #e0e8cf; font-size: 18px; font-weight: 500; }
+.settings-card h3 { font-size: 14px; font-weight: 500; }
+.settings-card p, .settings-card dd { color: #a0a39a; line-height: 1.7; }
+.settings-card button { padding: 10px 14px; border: 1px solid #505943; border-radius: 4px; background: #30352a; color: #e0e8cf; cursor: pointer; }
+.settings-card button:hover { background: #3b4430; }
+.settings-field { display: grid; gap: 10px; margin: 24px 0; }
+.settings-field select { width: 100%; padding: 11px; border-radius: 4px; }
+.settings-field > span, .settings-toggle small { color: #a0a39a; font-size: 12px; line-height: 1.6; }
+.settings-toggle { display: flex; gap: 12px; align-items: flex-start; margin: 24px 0; cursor: pointer; }
+.settings-toggle input { margin-top: 3px; }
+.settings-toggle small { display: block; margin-top: 6px; }
+.settings-stats { display: flex; gap: 48px; margin: 28px 0; }
+.settings-stats strong { display: block; color: #dce5c5; font-size: 38px; font-weight: 500; }
+.settings-stats span { display: block; margin-top: 8px; color: #a0a39a; }
+.settings-divider { height: 1px; margin: 28px 0; background: #3d4136; }
+.settings-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.settings-details { margin: 24px 0 0; }
+.settings-details > div + div { margin-top: 24px; }
+.settings-details dd { margin: 8px 0 0; }
+.settings-launch { grid-column: 1 / -1; }
+.settings-commands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 24px 0; }
+.settings-commands > div { display: grid; gap: 10px; padding: 18px; background: #141512; border-radius: 6px; }
+.settings-commands code { color: #dce5c5; overflow-wrap: anywhere; }
+.settings-commands span { color: #a0a39a; font-size: 12px; }
+.settings-feedback:empty { display: none; }
+@media (max-width: 1200px) { .settings-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .settings-dashboard, .settings-commands { grid-template-columns: minmax(0, 1fr); } .settings-dashboard { padding: 18px; } }
