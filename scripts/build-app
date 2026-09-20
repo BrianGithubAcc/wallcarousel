@@ -10,7 +10,6 @@ cp src-tauri/icons/wall_icon.png build/wallcarousel/share/icons/wallcarousel.png
   printf '#!/usr/bin/env bash\nset -euo pipefail\n'
   printf 'export LD_LIBRARY_PATH=%q\n' "${LD_LIBRARY_PATH:-}"
   printf 'export PATH=%q:"$PATH"\n' "$(dirname "$(command -v awww)")"
-  printf 'export WEBKIT_DMABUF_RENDERER_FORCE_SHM=1\n'
   printf 'exec "$(dirname "$(readlink -f "$0")")/../libexec/wallcarousel" "$@"\n'
 } > build/wallcarousel/bin/wallcarousel
 chmod +x build/wallcarousel/bin/wallcarousel

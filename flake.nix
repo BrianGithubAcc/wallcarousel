@@ -67,7 +67,7 @@
               --prefix PATH : ${runtimePath} \
               --prefix LD_LIBRARY_PATH : ${runtimeLibraryPath} \
               --prefix XDG_DATA_DIRS : ${pkgs.gsettings-desktop-schemas}/share:${pkgs.gtk3}/share \
-              --set WEBKIT_DMABUF_RENDERER_FORCE_SHM 1
+              --run 'if [ "''${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -e /sys/module/nvidia_drm ] || [ -e /proc/driver/nvidia/version ]; } && [ -z "''${__NV_DISABLE_EXPLICIT_SYNC+x}" ]; then export __NV_DISABLE_EXPLICIT_SYNC=1; fi'
 
             install -Dm644 src-tauri/icons/wall_icon.png \
               $out/share/icons/hicolor/64x64/apps/wallcarousel.png
@@ -124,8 +124,6 @@
           ];
 
           shellHook = ''
-            export WEBKIT_DMABUF_RENDERER_FORCE_SHM=1
-
             export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [
               pkgs.gtk3
               pkgs.gtk-layer-shell
@@ -137,11 +135,16 @@
               pkgs.openssl
             ]}:$LD_LIBRARY_PATH"
 
+            if [ "''${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -e /sys/module/nvidia_drm ] || [ -e /proc/driver/nvidia/version ]; } && [ -z "''${__NV_DISABLE_EXPLICIT_SYNC+x}" ]; then
+              export __NV_DISABLE_EXPLICIT_SYNC=1
+              echo "WebKit NVIDIA explicit sync: disabled for Wayland compatibility"
+            fi
+
             echo "WallCarousel development environment"
             echo "Node: $(node --version)"
             echo "pnpm: $(pnpm --version)"
             echo "Rust: $(rustc --version)"
-            echo "WebKit DMA-BUF renderer: disabled"
+            echo "WebKit DMA-BUF renderer: automatic"
           '';
         };
       }
