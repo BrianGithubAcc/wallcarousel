@@ -11,6 +11,10 @@ import {
 } from '@tauri-apps/api/core'
 
 import {
+  getCurrentWindow,
+} from '@tauri-apps/api/window'
+
+import {
   Carousel,
 } from '../Carousel/Carousel'
 
@@ -19,6 +23,7 @@ import type {
 } from '../Carousel/Carousel'
 
 import {
+  CAROUSEL_CONFIGURATION_KEY,
   loadCarouselConfiguration,
 } from '../Carousel/carouselConfiguration'
 
@@ -34,15 +39,16 @@ import './WallpaperOverlay.css'
 
 export function WallpaperOverlay() {
   /*
-   * Snapshot the configuration that was most
-   * recently active in the editor.
+   * The overlay WebView is hidden and reused by
+   * Tauri. Keep the configuration live instead
+   * of retaining the value from its first mount.
    */
-  const carouselConfiguration =
-    useMemo(
-      () =>
-        loadCarouselConfiguration(),
-      [],
-    )
+  const [
+    carouselConfiguration,
+    setCarouselConfiguration,
+  ] = useState(
+    loadCarouselConfiguration,
+  )
 
   const library =
     useLibrary()
@@ -74,6 +80,70 @@ export function WallpaperOverlay() {
     useState<string | null>(
       null,
     )
+
+  useEffect(() => {
+    let disposed = false
+    let unlistenFocus: (() => void) | undefined
+
+    const refreshConfiguration = () => {
+      setCarouselConfiguration(
+        loadCarouselConfiguration(),
+      )
+
+      positionRef.current =
+        0
+    }
+
+    const handleStorage = (
+      event: StorageEvent,
+    ) => {
+      if (
+        event.key === null ||
+        event.key === CAROUSEL_CONFIGURATION_KEY
+      ) {
+        refreshConfiguration()
+      }
+    }
+
+    window.addEventListener(
+      'storage',
+      handleStorage,
+    )
+
+    try {
+      void getCurrentWindow()
+        .onFocusChanged(
+          ({ payload: focused }) => {
+            if (focused) {
+              refreshConfiguration()
+            }
+          },
+        )
+        .then((cleanup) => {
+          if (disposed) {
+            cleanup()
+          } else {
+            unlistenFocus = cleanup
+          }
+        })
+        .catch(() => {
+          // Browser-only development has no Tauri window events.
+        })
+    } catch {
+      // Browser-only development has no Tauri window events.
+    }
+
+    return () => {
+      disposed = true
+
+      window.removeEventListener(
+        'storage',
+        handleStorage,
+      )
+
+      unlistenFocus?.()
+    }
+  }, [])
 
   const images =
     useMemo(

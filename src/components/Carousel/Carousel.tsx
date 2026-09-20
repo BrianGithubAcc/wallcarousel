@@ -309,7 +309,11 @@ function applyCardLayout(slots: RenderSlot[], scale: number) {
     }
 
     slot.mesh.scale.set(scale, scale, 1)
-    slot.mesh.frustumCulled = true
+    // The carousel already keeps a bounded pool and explicitly controls
+    // which slots are active. Letting Three.js make a second visibility
+    // decision from a moving bounding sphere can drop a card for one frame
+    // while its position/orientation is being interpolated.
+    slot.mesh.frustumCulled = false
     slot.mesh.visible = true
   }
 }
@@ -3144,9 +3148,36 @@ export function Carousel({
           0.05,
         )
 
-      const target =
+      const count =
+        itemsRef.current
+          .length
+
+      const requestedTarget =
         positionRef.current ??
         0
+
+      const target =
+        !infiniteRef.current &&
+        !closedLoopRef.current &&
+        !screenCoilRef.current &&
+        count >
+          0
+          ? clamp(
+              requestedTarget,
+              0,
+              count - 1,
+            )
+          : requestedTarget
+
+      if (
+        target !==
+          requestedTarget
+      ) {
+        // Overlay mode supplies this ref directly, so keep the shared
+        // position in range as well as the value used by this frame.
+        positionRef.current =
+          target
+      }
 
       const smoothing =
         1 -
@@ -3178,11 +3209,6 @@ export function Carousel({
 
       const compiled =
         compiledRef.current
-
-      const count =
-        itemsRef.current
-          .length
-
 
       /*
        * If a closed loop had to expand to fit
@@ -3475,15 +3501,16 @@ export function Carousel({
           )
 
           /*
-           * Every Screen Coil card remains
-           * visible whenever its grid/path point
-           * is within the camera frustum.
+           * Every Screen Coil card remains active
+           * while its grid/path point belongs to
+           * the render pool. The renderer clips
+           * anything outside the view.
            */
           slot.material.opacity =
             slot.textureOpacity
 
           slot.mesh.frustumCulled =
-            true
+            false
 
           slot.mesh.visible =
             true
@@ -3648,8 +3675,8 @@ export function Carousel({
               slot.textureOpacity
 
             /*
-             * Keep the mesh alive so Three.js
-             * itself can frustum-cull it.
+             * Keep the mesh alive so the renderer
+             * can clip it normally at the GPU.
              * A missing texture remains
              * transparent rather than suddenly
              * producing a blank card.
@@ -3658,7 +3685,7 @@ export function Carousel({
               true
 
             slot.mesh.frustumCulled =
-              true
+              false
           } catch {
             slot.mesh.visible =
               false
@@ -3825,7 +3852,7 @@ export function Carousel({
               slot.textureOpacity
 
             slot.mesh.frustumCulled =
-              true
+              false
           } catch {
             slot.mesh.visible =
               false
@@ -4018,7 +4045,7 @@ export function Carousel({
         false
 
       mesh.frustumCulled =
-        true
+        false
 
       scene.add(
         mesh,
