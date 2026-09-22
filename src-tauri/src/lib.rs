@@ -362,6 +362,12 @@ fn show_overlay_window(app: &AppHandle) -> Result<(), String> {
 #[cfg(target_os = "macos")]
 fn show_transition_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(TRANSITION_LABEL) {
+        window
+            .set_always_on_top(false)
+            .map_err(|error| error.to_string())?;
+        window
+            .set_always_on_bottom(true)
+            .map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
         return Ok(());
     }
@@ -371,7 +377,7 @@ fn show_transition_window(app: &AppHandle) -> Result<(), String> {
             .title("Wallpaper transition")
             .decorations(false)
             .transparent(true)
-            .always_on_top(true)
+            .always_on_bottom(true)
             .visible_on_all_workspaces(true)
             .skip_taskbar(true)
             .resizable(false)
