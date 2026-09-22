@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import type { LibraryImage } from '../../hooks/useLibrary'
 import type { Playlist } from '../../hooks/usePlaylists'
 import { TransitionPreview } from '../Slideshow/TransitionPreview'
+import { macOSPreviewEffects, transitionLabel } from '../Slideshow/transitionPreviewEffects'
 import './SlideshowPage.css'
 
 interface Config {
@@ -21,12 +22,14 @@ interface Status {
   error: string | null
   remainingSeconds: number | null
 }
-const effects = ['fade', 'left', 'right', 'top', 'bottom', 'wipe', 'wave', 'grow', 'center', 'any', 'outer', 'random', 'none']
+const linuxEffects = ['fade', 'left', 'right', 'top', 'bottom', 'wipe', 'wave', 'grow', 'center', 'any', 'outer', 'random', 'none']
 const intervalUnits = { seconds: 1, minutes: 60, hours: 3600 }
 type IntervalUnit = keyof typeof intervalUnits
 const intervalUnitKey = 'wallcarousel.slideshow.interval-unit.v1'
 
 export function SlideshowPage({ images, playlists, autoPreview = true }: { images: LibraryImage[], playlists: Playlist[], autoPreview?: boolean }) {
+  const isMacOS = typeof navigator !== 'undefined' && /Macintosh|Mac OS X/.test(`${navigator.userAgent} ${navigator.platform}`)
+  const effects = isMacOS ? macOSPreviewEffects : linuxEffects
   const [config, setConfig] = useState<Config | null>(null)
   const [status, setStatus] = useState<Status | null>(null)
   const [busy, setBusy] = useState(false)
@@ -154,9 +157,9 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
                     </select>
                   </div>
                 </div>
-                <label>Transition effect
+                <label>Transition effect{isMacOS ? ' (preview only on macOS)' : ''}
                   <select value={config.transition} onChange={event => update({ transition: event.target.value })}>
-                    {effects.map(effect => <option key={effect} value={effect}>{effect === 'none' ? 'Instant' : effect[0].toUpperCase() + effect.slice(1)}</option>)}
+                    {effects.map(effect => <option key={effect} value={effect}>{transitionLabel(effect)}</option>)}
                   </select>
                 </label>
                 <label>Transition duration (seconds)
@@ -166,7 +169,7 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
                   <input type="number" min="1" max="255" step="1" required value={config.fps} onChange={event => update({ fps: event.target.valueAsNumber })} />
                 </label>
               </div>
-              <p className="slideshow-hint">Choose an interval from 5 seconds to 24 hours. Transitions must be shorter than this interval.</p>
+              <p className="slideshow-hint">{isMacOS ? 'macOS applies wallpaper changes immediately. Select an effect to preview it here; duration and frame rate control the preview.' : 'Choose an interval from 5 seconds to 24 hours. Transitions must be shorter than this interval.'}</p>
             </fieldset>
             <div className="slideshow-actions">
               <button type="submit" disabled={busy || !valid || Boolean(missingPlaylist)}>Save settings</button>

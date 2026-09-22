@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import type { LibraryImage } from '../../hooks/useLibrary'
-import { drawCover, drawTransition, previewEffects } from './transitionPreview'
+import { drawCover, drawTransition, previewEffects, transitionLabel } from './transitionPreviewEffects'
 import './TransitionPreview.css'
 
 interface Props {
@@ -86,7 +86,7 @@ function PreviewCanvas({ pair, effect, duration, fps, valid, autoPlay }: {
     })
     const chosen = effect === 'random' ? previewEffects[Math.floor(Math.random() * previewEffects.length)] : effect
     const origin = chosen === 'any' ? { x: Math.random(), y: Math.random() } : { x: .5, y: .5 }
-    const label = chosen === 'none' ? 'Instant' : chosen[0].toUpperCase() + chosen.slice(1)
+    const label = transitionLabel(chosen)
     let frame = 0
     let started = 0
     let lastFrame = -1

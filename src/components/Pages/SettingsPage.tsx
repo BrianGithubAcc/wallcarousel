@@ -49,7 +49,7 @@ export function SettingsPage({ preferences, onChange, onNavigate, imageCount, pl
           <dl className="settings-details">
             <div><dt>Close the window</dt><dd>The app stays in the tray. A playing slideshow keeps running.</dd></div>
             <div><dt>Quit the app</dt><dd>Choose Quit in the tray menu. Slideshow settings are restored paused next time.</dd></div>
-            <div><dt>Apply a wallpaper</dt><dd>AWWW changes the wallpaper on all connected displays.</dd></div>
+            <div><dt>Apply a wallpaper</dt><dd>Wallcarousel changes the wallpaper on all connected displays using the native desktop integration.</dd></div>
           </dl>
         </section>
         <section className="settings-card settings-launch">

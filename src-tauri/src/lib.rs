@@ -1,7 +1,7 @@
 mod awww;
-mod slideshow;
 #[cfg(target_os = "linux")]
 mod overlay;
+mod slideshow;
 
 use awww::AwwwManager;
 
@@ -184,7 +184,7 @@ const OVERLAY_LABEL: &str = "wallpaper-overlay";
  * tauri.conf.json has create=false for "main",
  * therefore --background starts only the tray/backend.
  *
- * The WebView is constructed here, after the Wayland
+ * The WebView is constructed here, after the native
  * session and monitor scaling are fully established.
  */
 fn show_main_window(app: &AppHandle) -> Result<(), String> {
@@ -217,8 +217,9 @@ fn show_main_window(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-// Layer surfaces are not workspace-owned application windows. Remapping the
-// picker lets the compositor choose the currently active output.
+// On Linux layer surfaces are not workspace-owned application windows.
+// Remapping the picker lets the compositor choose the currently active
+// output. macOS and other platforms use a normal borderless overlay window.
 fn show_overlay_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(OVERLAY_LABEL) {
         window.hide().map_err(|error| error.to_string())?;
@@ -352,7 +353,7 @@ async fn set_wallpaper(
         .map_err(|error| format!("Wallpaper worker failed: {error}"))??;
 
     /*
-     * Close only after AWWW successfully
+     * Close only after the native wallpaper backend successfully
      * applies the image.
      */
     if let Some(window) = app.get_webview_window(OVERLAY_LABEL) {
@@ -408,7 +409,7 @@ fn handle_launch(app: &AppHandle, args: &[String]) {
     /*
      * Background mode intentionally creates NO WebView.
      *
-     * Tauri + tray + AWWW remain alive, but WebKit is
+     * Tauri + tray + the wallpaper backend remain alive, but WebKit is
      * deferred until the user actually opens the UI.
      */
     if args.iter().any(|arg| arg == "--background") {
@@ -501,17 +502,16 @@ pub fn run() {
             force_valid_gtk_dpi();
 
             /*
-             * Start/check AWWW in the background.
+             * Warm up the platform wallpaper backend in the background.
              *
-             * The app stays usable if AWWW is not
-             * installed. Clicking a wallpaper will
-             * try again and return a useful error.
+             * On Linux this starts/checks AWWW. On macOS the backend is
+             * intentionally a no-op until a wallpaper is selected.
              */
             let awww = app.state::<AwwwManager>().inner().clone();
 
             std::thread::spawn(move || {
                 if let Err(error) = awww.ensure_daemon() {
-                    eprintln!("[awww] startup warm-up failed: {error}");
+                    eprintln!("[wallpaper] startup warm-up failed: {error}");
                 }
             });
 

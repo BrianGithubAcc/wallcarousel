@@ -23,6 +23,7 @@
       }
     ],
     "withGlobalTauri": false,
+    "macOSPrivateApi": true,
     "security": {
       "assetProtocol": {
         "enable": true,
@@ -37,7 +38,8 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/wall_icon.png"
+      "icons/wall_icon.png",
+      "icons/icon.icns"
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"

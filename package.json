@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "app:build": "tauri build --no-bundle",
-    "app:bundle": "tauri build --bundles appimage"
+    "app:bundle": "tauri build --bundles appimage",
+    "app:bundle:macos": "tauri build --bundles app,dmg"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",

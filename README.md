@@ -1,7 +1,7 @@
 <p align="center">
   <img src="./src-tauri/icons/wall_icon.png" alt="WallCarousel icon" align="center" height="80" />
 
-  <p align="center">A local wallpaper library, carousel picker, and slideshow for Linux.<br />Built around AWWW, Tauri, React, and Three.js.</p>
+  <p align="center">A local wallpaper library, carousel picker, and slideshow for Linux and macOS.<br />Built around Tauri, React, Three.js, and native wallpaper integrations.</p>
 
   <p align="center">
     <strong><a href="https://github.com/BrianGithubAcc/wallcarousel">WallCarousel on GitHub</a></strong>
@@ -10,9 +10,10 @@
 
 ## Project Overview
 
-WallCarousel is a Linux desktop application for organising local wallpapers,
-grouping them into playlists, browsing them through a 3D mathematical carousel,
-and applying them with [AWWW](https://codeberg.org/LGFae/awww).
+WallCarousel organises local wallpapers, groups them into playlists, browses them
+through a 3D mathematical carousel, and applies them to the desktop. Linux uses
+[AWWW](https://codeberg.org/LGFae/awww); macOS uses its native desktop-picture
+integration.
 
 The application is designed for a local-first workflow. Wallpaper files stay in
 their original folders; the application stores only local metadata, playlists,
@@ -24,6 +25,7 @@ preferences, and carousel settings.
 - [Tech Stack Overview](#tech-stack-overview)
 - [Getting Started Locally](#getting-started-locally)
   - [Nix development shell](#nix-development-shell)
+  - [macOS](#macos)
   - [Install from GitHub in NixOS](#install-from-github-in-nixos)
   - [Run the development application](#run-the-development-application)
   - [Build and install locally](#build-and-install-locally)
@@ -48,10 +50,10 @@ WallCarousel has a TypeScript/React frontend and a Rust/Tauri desktop shell.
 - [Vite](https://vite.dev) builds the frontend.
 - [Three.js](https://threejs.org) renders the mathematical carousel and equation
   graph.
-- [Tauri](https://tauri.app) provides the native Linux window, tray integration,
-  filesystem access, and single-instance behavior.
+- [Tauri](https://tauri.app) provides the native Linux/macOS window, tray
+  integration, filesystem access, and single-instance behavior.
 - [AWWW](https://codeberg.org/LGFae/awww) applies wallpapers and runs slideshow
-  transitions.
+  transitions on Linux. macOS delegates wallpaper changes to System Events.
 - [Nix flakes](https://nixos.wiki/wiki/Flakes) provide a reproducible Linux
   development environment and local build.
 
@@ -78,6 +80,35 @@ nix develop -c pnpm install --frozen-lockfile
 The development shell also supplies the GTK layer-shell library used by the
 Wayland overlay. AWWW is included for development, but the application still
 uses the compositor session and displays available on the host system.
+
+### macOS
+
+Install Apple's command-line development tools, Rust, Node.js, and pnpm. Tauri's
+macOS build requires Xcode or the Xcode Command Line Tools:
+
+```sh
+xcode-select --install
+```
+
+Install dependencies and start the native development application:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm tauri dev
+```
+
+Build a macOS application bundle and DMG:
+
+```sh
+pnpm app:bundle:macos
+```
+
+The first time Wallcarousel changes a wallpaper, macOS may ask for permission to
+control **System Events**. Allow it in **System Settings → Privacy & Security →
+Automation**. macOS applies wallpaper changes immediately; transition effects
+are preview-only on macOS because the native desktop-picture API does not expose
+animated updates. The preview includes additional zoom, push, blur, pixelate,
+stripe, checker, corner, diagonal, and spiral effects.
 
 ### Install from GitHub in NixOS
 
@@ -224,7 +255,9 @@ when a larger preview is preferred.
 ### Slideshow
 
 The **Slideshow** tab applies wallpapers on a timer and supports playlists,
-shuffle, pause/resume, manual next wallpaper, and AWWW transition effects.
+shuffle, pause/resume, and manual next wallpaper. Linux supports AWWW transition
+effects; macOS applies changes immediately and offers additional preview-only
+effects.
 
 The transition preview uses two selected wallpapers or sample landscapes. Change
 the transition, duration, or frame rate to replay the preview; **Replay preview**
@@ -233,10 +266,11 @@ respected by waiting for an explicit replay.
 
 ### Desktop overlay
 
-On Hyprland and other compositors supporting GTK layer-shell, the carousel picker
-uses the overlay layer above application windows without a taskbar entry or a
-fullscreen workspace. Each opening lets the compositor choose the active output.
-Escape or selecting a wallpaper closes the picker and releases keyboard focus.
+On Hyprland and other compositors supporting GTK layer-shell, the Linux carousel
+picker uses the overlay layer above application windows without a taskbar entry
+or a fullscreen workspace. On macOS, it uses a borderless always-on-top window
+covering the active display. Escape or selecting a wallpaper closes the picker
+and releases keyboard focus.
 
 Other desktops use a borderless always-on-top window as a fallback.
 
@@ -260,7 +294,7 @@ src/                    React application and UI components
 src/components/Carousel Three.js carousel, equations, and graph
 src/components/Slideshow slideshow preview and transition helpers
 src/hooks/              library, playlist, and carousel state
-src-tauri/src/          Rust/Tauri integration and AWWW control
+src-tauri/src/          Rust/Tauri integration and platform wallpaper control
 scripts/                development, build, and installation helpers
 public/                 static frontend assets
 flake.nix               Nix development shell and package definition

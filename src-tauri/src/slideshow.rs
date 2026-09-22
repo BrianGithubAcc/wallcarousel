@@ -14,6 +14,22 @@ const EFFECTS: &[&str] = &[
     "outer", "random",
 ];
 
+#[cfg(target_os = "macos")]
+const MACOS_PREVIEW_EFFECTS: &[&str] = &[
+    "zoom",
+    "push-left",
+    "push-right",
+    "push-up",
+    "push-down",
+    "blur",
+    "pixelate",
+    "stripes",
+    "checker",
+    "corners",
+    "diagonal",
+    "spiral",
+];
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
@@ -53,7 +69,7 @@ impl Config {
                 "Transition duration must be 0.1–30 seconds and shorter than the interval.".into(),
             );
         }
-        if !(1..=255).contains(&self.fps) || !EFFECTS.contains(&self.transition.as_str()) {
+        if !(1..=255).contains(&self.fps) || !valid_effect(&self.transition) {
             return Err("Invalid transition settings.".into());
         }
         if self
@@ -78,6 +94,19 @@ impl Config {
         .map(OsString::from)
         .collect()
     }
+}
+
+fn valid_effect(effect: &str) -> bool {
+    if EFFECTS.contains(&effect) {
+        return true;
+    }
+
+    #[cfg(target_os = "macos")]
+    if MACOS_PREVIEW_EFFECTS.contains(&effect) {
+        return true;
+    }
+
+    false
 }
 
 #[derive(Clone, Serialize)]

@@ -277,7 +277,7 @@ export function WallpaperOverlay() {
 
           /*
            * Rust closes the overlay after a
-           * successful awww command.
+           * successful wallpaper command.
            */
         } catch (
           commandError

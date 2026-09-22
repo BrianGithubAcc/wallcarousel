@@ -12,13 +12,18 @@
         pkgs = import nixpkgs {
           inherit system;
         };
+        isLinux = pkgs.stdenv.hostPlatform.isLinux;
 
-        runtimePath = pkgs.lib.makeBinPath [ pkgs.awww ];
-        runtimeLibraryPath = pkgs.lib.makeLibraryPath [
-          pkgs.gtk-layer-shell
-          pkgs.libayatana-appindicator
-          pkgs.libappindicator-gtk3
-        ];
+        runtimePath = pkgs.lib.optionalString isLinux (
+          pkgs.lib.makeBinPath [ pkgs.awww ]
+        );
+        runtimeLibraryPath = pkgs.lib.optionalString isLinux (
+          pkgs.lib.makeLibraryPath [
+            pkgs.gtk-layer-shell
+            pkgs.libayatana-appindicator
+            pkgs.libappindicator-gtk3
+          ]
+        );
 
         wallcarousel = pkgs.rustPlatform.buildRustPackage {
           pname = "wallcarousel";
@@ -40,14 +45,15 @@
           };
 
           nativeBuildInputs = with pkgs; [
-            pkg-config
             nodejs
             pnpm
             pnpmConfigHook
+          ] ++ pkgs.lib.optionals isLinux [
+            pkg-config
             makeWrapper
           ];
 
-          buildInputs = with pkgs; [
+          buildInputs = with pkgs; pkgs.lib.optionals isLinux [
             gtk3
             gtk-layer-shell
             webkitgtk_4_1
@@ -61,7 +67,7 @@
             pnpm build
           '';
 
-          postInstall = ''
+          postInstall = if isLinux then ''
             mv $out/bin/app $out/bin/wallcarousel
             wrapProgram $out/bin/wallcarousel \
               --prefix PATH : ${runtimePath} \
@@ -81,12 +87,14 @@
             Terminal=false
             Categories=Utility;Graphics;
             EOF
+          '' else ''
+            mv $out/bin/app $out/bin/wallcarousel
           '';
 
           meta = {
             description = "Wallpaper library and desktop carousel";
             mainProgram = "wallcarousel";
-            platforms = pkgs.lib.platforms.linux;
+            platforms = pkgs.lib.platforms.linux ++ pkgs.lib.platforms.darwin;
           };
         };
       in
@@ -109,9 +117,9 @@
             clippy
             rustfmt
 
+          ] ++ pkgs.lib.optionals isLinux (with pkgs; [
             pkg-config
             openssl
-
             gtk3
             gtk-layer-shell
             glib
@@ -119,29 +127,30 @@
             librsvg
             libsoup_3
             libayatana-appindicator
-
             awww
-          ];
+          ]);
 
           shellHook = ''
-            export WEBKIT_DMABUF_RENDERER_FORCE_SHM=1
-
-            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [
-              pkgs.gtk3
-              pkgs.gtk-layer-shell
-              pkgs.glib
-              pkgs.webkitgtk_4_1
-              pkgs.librsvg
-              pkgs.libsoup_3
-              pkgs.libayatana-appindicator
-              pkgs.openssl
-            ]}:$LD_LIBRARY_PATH"
-
             echo "WallCarousel development environment"
             echo "Node: $(node --version)"
             echo "pnpm: $(pnpm --version)"
             echo "Rust: $(rustc --version)"
-            echo "WebKit DMA-BUF renderer: disabled"
+            ${pkgs.lib.optionalString isLinux ''
+              export WEBKIT_DMABUF_RENDERER_FORCE_SHM=1
+
+              export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [
+                pkgs.gtk3
+                pkgs.gtk-layer-shell
+                pkgs.glib
+                pkgs.webkitgtk_4_1
+                pkgs.librsvg
+                pkgs.libsoup_3
+                pkgs.libayatana-appindicator
+                pkgs.openssl
+              ]}:$LD_LIBRARY_PATH"
+
+              echo "WebKit DMA-BUF renderer: disabled"
+            ''}
           '';
         };
       }
