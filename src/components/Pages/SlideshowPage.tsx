@@ -157,7 +157,7 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
                     </select>
                   </div>
                 </div>
-                <label>Transition effect{isMacOS ? ' (preview only on macOS)' : ''}
+                <label>Transition effect
                   <select value={config.transition} onChange={event => update({ transition: event.target.value })}>
                     {effects.map(effect => <option key={effect} value={effect}>{transitionLabel(effect)}</option>)}
                   </select>
@@ -169,7 +169,7 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
                   <input type="number" min="1" max="255" step="1" required value={config.fps} onChange={event => update({ fps: event.target.valueAsNumber })} />
                 </label>
               </div>
-              <p className="slideshow-hint">{isMacOS ? 'macOS applies wallpaper changes immediately. Select an effect to preview it here; duration and frame rate control the preview.' : 'Choose an interval from 5 seconds to 24 hours. Transitions must be shorter than this interval.'}</p>
+              <p className="slideshow-hint">{isMacOS ? 'macOS animates wallpaper changes through a fullscreen overlay. Duration and frame rate control the transition.' : 'Choose an interval from 5 seconds to 24 hours. Transitions must be shorter than this interval.'}</p>
             </fieldset>
             <div className="slideshow-actions">
               <button type="submit" disabled={busy || !valid || Boolean(missingPlaylist)}>Save settings</button>

@@ -7,14 +7,18 @@ use awww::AwwwManager;
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{mpsc, Arc, Mutex};
+use std::time::Duration;
 
 use image::imageops::FilterType;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tauri::{
     command,
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent,
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, State, WebviewUrl,
+    WebviewWindowBuilder, WindowEvent,
 };
 
 const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "webp", "gif", "avif", "bmp", "svg"];
@@ -177,6 +181,91 @@ fn generate_thumbnail_blocking(app: &AppHandle, path: &str) -> Result<String, St
 
 const MAIN_LABEL: &str = "main";
 const OVERLAY_LABEL: &str = "wallpaper-overlay";
+const TRANSITION_LABEL: &str = "wallpaper-transition";
+const TRANSITION_EVENT: &str = "wallpaper-transition-start";
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WallpaperTransition {
+    pub id: u64,
+    pub from_path: Option<String>,
+    pub to_path: String,
+    pub transition: String,
+    pub duration_seconds: f64,
+    pub fps: u16,
+}
+
+#[derive(Clone, Default)]
+pub(crate) struct TransitionState {
+    inner: Arc<Mutex<TransitionStateInner>>,
+}
+
+#[derive(Default)]
+struct TransitionStateInner {
+    next_id: u64,
+    pending: Option<WallpaperTransition>,
+}
+
+impl TransitionState {
+    fn begin(
+        &self,
+        from_path: Option<&Path>,
+        to_path: &Path,
+        transition: &str,
+        duration_seconds: f64,
+        fps: u16,
+    ) -> Result<WallpaperTransition, String> {
+        let mut state = self
+            .inner
+            .lock()
+            .map_err(|_| "Transition state lock was poisoned".to_string())?;
+        state.next_id = state.next_id.wrapping_add(1).max(1);
+        let request = WallpaperTransition {
+            id: state.next_id,
+            from_path: from_path.map(|path| path.to_string_lossy().into_owned()),
+            to_path: to_path.to_string_lossy().into_owned(),
+            transition: transition.to_owned(),
+            duration_seconds,
+            fps,
+        };
+        state.pending = Some(request.clone());
+        Ok(request)
+    }
+
+    fn pending(&self) -> Result<Option<WallpaperTransition>, String> {
+        Ok(self
+            .inner
+            .lock()
+            .map_err(|_| "Transition state lock was poisoned".to_string())?
+            .pending
+            .clone())
+    }
+
+    fn matches(&self, id: u64, path: &Path) -> Result<bool, String> {
+        Ok(self
+            .inner
+            .lock()
+            .map_err(|_| "Transition state lock was poisoned".to_string())?
+            .pending
+            .as_ref()
+            .is_some_and(|request| request.id == id && request.to_path == path.to_string_lossy()))
+    }
+
+    fn clear(&self, id: u64) -> Result<(), String> {
+        let mut state = self
+            .inner
+            .lock()
+            .map_err(|_| "Transition state lock was poisoned".to_string())?;
+        if state
+            .pending
+            .as_ref()
+            .is_some_and(|request| request.id == id)
+        {
+            state.pending = None;
+        }
+        Ok(())
+    }
+}
 
 /*
  * Create/show the normal configuration window.
@@ -267,6 +356,139 @@ fn show_overlay_window(app: &AppHandle) -> Result<(), String> {
     if !is_layer {
         window.set_focus().map_err(|error| error.to_string())?;
     }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn show_transition_window(app: &AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window(TRANSITION_LABEL) {
+        window.show().map_err(|error| error.to_string())?;
+        return Ok(());
+    }
+
+    let window =
+        WebviewWindowBuilder::new(app, TRANSITION_LABEL, WebviewUrl::App("index.html".into()))
+            .title("Wallpaper transition")
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .visible_on_all_workspaces(true)
+            .skip_taskbar(true)
+            .resizable(false)
+            .focused(false)
+            .focusable(false)
+            .visible(false)
+            .build()
+            .map_err(|error| format!("Could not create wallpaper transition: {error}"))?;
+
+    let monitors = window
+        .available_monitors()
+        .map_err(|error| format!("Could not enumerate displays: {error}"))?;
+    if let Some(first) = monitors.first() {
+        let mut min_x = first.position().x as i64;
+        let mut min_y = first.position().y as i64;
+        let mut max_x = min_x + first.size().width as i64;
+        let mut max_y = min_y + first.size().height as i64;
+        for monitor in monitors.iter().skip(1) {
+            min_x = min_x.min(monitor.position().x as i64);
+            min_y = min_y.min(monitor.position().y as i64);
+            max_x = max_x.max(monitor.position().x as i64 + monitor.size().width as i64);
+            max_y = max_y.max(monitor.position().y as i64 + monitor.size().height as i64);
+        }
+        window
+            .set_position(PhysicalPosition::new(min_x as i32, min_y as i32))
+            .map_err(|error| error.to_string())?;
+        window
+            .set_size(PhysicalSize::new(
+                (max_x - min_x) as u32,
+                (max_y - min_y) as u32,
+            ))
+            .map_err(|error| error.to_string())?;
+    }
+    window
+        .set_ignore_cursor_events(true)
+        .map_err(|error| error.to_string())?;
+    window.show().map_err(|error| error.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn show_transition_window(_app: &AppHandle) -> Result<(), String> {
+    Err("Native wallpaper transitions are only available on macOS".to_string())
+}
+
+fn hide_transition_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window(TRANSITION_LABEL) {
+        let _ = window.hide();
+    }
+}
+
+pub(crate) fn begin_wallpaper_transition(
+    app: &AppHandle,
+    from_path: &Path,
+    to_path: &Path,
+    transition: &str,
+    duration_seconds: f64,
+    fps: u16,
+) -> Result<(), String> {
+    let handle = app.clone();
+    let (sender, receiver) = mpsc::channel();
+    app.run_on_main_thread(move || {
+        let _ = sender.send(show_transition_window(&handle));
+    })
+    .map_err(|error| format!("Could not schedule wallpaper transition: {error}"))?;
+    receiver
+        .recv_timeout(Duration::from_secs(5))
+        .map_err(|error| format!("Could not prepare wallpaper transition: {error}"))??;
+    let request = app.state::<TransitionState>().inner().begin(
+        Some(from_path),
+        to_path,
+        transition,
+        duration_seconds,
+        fps,
+    )?;
+    app.emit_to(TRANSITION_LABEL, TRANSITION_EVENT, request)
+        .map_err(|error| format!("Could not start wallpaper transition: {error}"))
+}
+
+#[command]
+fn get_wallpaper_transition(
+    state: State<'_, TransitionState>,
+) -> Result<Option<WallpaperTransition>, String> {
+    state.inner().pending()
+}
+
+#[command]
+async fn finish_wallpaper_transition(
+    app: AppHandle,
+    awww: tauri::State<'_, AwwwManager>,
+    id: u64,
+    path: String,
+) -> Result<(), String> {
+    let wallpaper = PathBuf::from(path);
+    if !app
+        .state::<TransitionState>()
+        .inner()
+        .matches(id, &wallpaper)?
+    {
+        return Ok(());
+    }
+    let manager = awww.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || manager.set_wallpaper(&wallpaper))
+        .await
+        .map_err(|error| format!("Wallpaper transition worker failed: {error}"))??;
+    app.state::<TransitionState>().inner().clear(id)?;
+    hide_transition_window(&app);
+    Ok(())
+}
+
+#[command]
+fn cancel_wallpaper_transition(
+    app: AppHandle,
+    state: State<'_, TransitionState>,
+    id: u64,
+) -> Result<(), String> {
+    state.inner().clear(id)?;
+    hide_transition_window(&app);
     Ok(())
 }
 
@@ -474,6 +696,7 @@ pub fn run() {
             handle_launch(app, &args);
         }))
         .manage(AwwwManager::new())
+        .manage(TransitionState::default())
         .plugin(tauri_plugin_dialog::init())
         /*
          * Keep the app alive as a tray utility.
@@ -494,8 +717,10 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            let awww = app.state::<AwwwManager>().inner().clone();
+            awww.attach_app(app.handle().clone());
             app.manage(slideshow::Slideshow::new(
-                app.state::<AwwwManager>().inner().clone(),
+                awww,
                 app.path().app_config_dir()?.join("slideshow.json"),
             ));
             #[cfg(target_os = "linux")]
@@ -575,6 +800,9 @@ pub fn run() {
             toggle_render_fullscreen,
             scan_wallpaper_directory,
             generate_thumbnail,
+            get_wallpaper_transition,
+            finish_wallpaper_transition,
+            cancel_wallpaper_transition,
             open_wallpaper_overlay,
             close_wallpaper_overlay,
             set_wallpaper,

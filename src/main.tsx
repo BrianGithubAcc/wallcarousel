@@ -20,20 +20,29 @@ const WallpaperOverlay = lazy(() =>
     default: module.WallpaperOverlay,
   })),
 )
+const WallpaperTransitionOverlay = lazy(() =>
+  import('./components/Overlay/WallpaperTransitionOverlay').then((module) => ({
+    default: module.WallpaperTransitionOverlay,
+  })),
+)
 
 let isWallpaperOverlay =
   false
+let isWallpaperTransition =
+  false
 
 try {
-  isWallpaperOverlay =
-    getCurrentWindow().label ===
-    'wallpaper-overlay'
+  const label = getCurrentWindow().label
+  isWallpaperOverlay = label === 'wallpaper-overlay'
+  isWallpaperTransition = label === 'wallpaper-transition'
 } catch {
   /*
    * Running directly in an ordinary browser
    * rather than through Tauri.
    */
   isWallpaperOverlay =
+    false
+  isWallpaperTransition =
     false
 }
 
@@ -46,6 +55,15 @@ if (
     )
 }
 
+if (
+  isWallpaperTransition
+) {
+  document.documentElement
+    .classList.add(
+      'wallpaper-transition-document',
+    )
+}
+
 createRoot(
   document.getElementById(
     'root',
@@ -54,7 +72,11 @@ createRoot(
   <StrictMode>
     <Suspense fallback={null}>
       {
-        isWallpaperOverlay
+        isWallpaperTransition
+          ? (
+            <WallpaperTransitionOverlay />
+          )
+          : isWallpaperOverlay
           ? (
             <WallpaperOverlay />
           )

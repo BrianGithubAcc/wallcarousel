@@ -58,6 +58,8 @@ mod linux {
             }
         }
 
+        pub fn attach_app(&self, _app: tauri::AppHandle) {}
+
         /*
          * --------------------------------------------------------
          * PUBLIC API
@@ -424,9 +426,11 @@ pub use linux::AwwwManager;
 #[cfg(target_os = "macos")]
 mod macos {
     use std::{
+        ffi::OsString,
         io::Write,
-        path::Path,
+        path::{Path, PathBuf},
         process::{Command, Stdio},
+        sync::{Arc, Mutex},
     };
 
     /// Native macOS wallpaper control.
@@ -436,11 +440,20 @@ mod macos {
     /// the same small API as the Linux AWWW implementation while delegating
     /// the actual update to the platform.
     #[derive(Clone, Default)]
-    pub struct AwwwManager;
+    pub struct AwwwManager {
+        app: Arc<Mutex<Option<tauri::AppHandle>>>,
+        current_path: Arc<Mutex<Option<PathBuf>>>,
+    }
 
     impl AwwwManager {
         pub fn new() -> Self {
-            Self
+            Self::default()
+        }
+
+        pub fn attach_app(&self, app: tauri::AppHandle) {
+            if let Ok(mut current) = self.app.lock() {
+                *current = Some(app);
+            }
         }
 
         pub fn ensure_daemon(&self) -> Result<(), String> {
@@ -454,8 +467,34 @@ mod macos {
         pub fn set_wallpaper_with_transition(
             &self,
             path: &Path,
-            _transition_args: &[std::ffi::OsString],
+            transition_args: &[OsString],
         ) -> Result<(), String> {
+            let (effect, duration_seconds, fps) = transition_settings(transition_args);
+            let app = self.app.lock().ok().and_then(|current| current.clone());
+            let from_path = self
+                .current_path
+                .lock()
+                .ok()
+                .and_then(|current| current.clone());
+
+            if let (Some(app), Some(from_path), Some(effect)) = (app, from_path, effect) {
+                if effect != "none" {
+                    crate::begin_wallpaper_transition(
+                        &app,
+                        &from_path,
+                        path,
+                        &effect,
+                        duration_seconds,
+                        fps,
+                    )?;
+                    return Ok(());
+                }
+            }
+
+            self.set_wallpaper_immediate(path)
+        }
+
+        fn set_wallpaper_immediate(&self, path: &Path) -> Result<(), String> {
             let path = path
                 .to_str()
                 .ok_or_else(|| "Wallpaper path is not valid UTF-8".to_string())?;
@@ -487,6 +526,9 @@ mod macos {
                 .map_err(|error| format!("Could not wait for osascript: {error}"))?;
 
             if output.status.success() {
+                if let Ok(mut current) = self.current_path.lock() {
+                    *current = Some(PathBuf::from(path));
+                }
                 return Ok(());
             }
 
@@ -497,6 +539,27 @@ mod macos {
                 Err(format!("Could not set macOS wallpaper: {error}"))
             }
         }
+    }
+
+    fn transition_settings(args: &[OsString]) -> (Option<String>, f64, u16) {
+        let mut effect = None;
+        let mut duration_seconds = 2.0;
+        let mut fps = 60;
+        let mut index = 0;
+        while index + 1 < args.len() {
+            let key = args[index].to_string_lossy();
+            let value = args[index + 1].to_string_lossy();
+            match key.as_ref() {
+                "--transition-type" => effect = Some(value.into_owned()),
+                "--transition-duration" => {
+                    duration_seconds = value.parse().unwrap_or(duration_seconds)
+                }
+                "--transition-fps" => fps = value.parse().unwrap_or(fps),
+                _ => {}
+            }
+            index += 2;
+        }
+        (effect, duration_seconds, fps)
     }
 
     fn escape_applescript_string(value: &str) -> String {
@@ -522,6 +585,8 @@ mod unsupported {
         pub fn new() -> Self {
             Self
         }
+
+        pub fn attach_app(&self, _app: tauri::AppHandle) {}
 
         pub fn ensure_daemon(&self) -> Result<(), String> {
             Ok(())
