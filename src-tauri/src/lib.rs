@@ -360,14 +360,33 @@ fn show_overlay_window(app: &AppHandle) -> Result<(), String> {
 }
 
 #[cfg(target_os = "macos")]
+fn configure_transition_window(window: &tauri::WebviewWindow) -> Result<(), String> {
+    let native_window = window
+        .ns_window()
+        .map_err(|error| format!("Could not access wallpaper transition window: {error}"))?;
+    let native_window: &objc2_app_kit::NSWindow = unsafe { &*native_window.cast() };
+    let desktop_level = objc2_core_graphics::CGWindowLevelForKey(
+        objc2_core_graphics::CGWindowLevelKey::DesktopWindowLevelKey,
+    );
+
+    native_window.setLevel(desktop_level as _);
+    native_window.setOpaque(false);
+    native_window.setHasShadow(false);
+    native_window.setCollectionBehavior(
+        objc2_app_kit::NSWindowCollectionBehavior::CanJoinAllSpaces
+            | objc2_app_kit::NSWindowCollectionBehavior::Stationary
+            | objc2_app_kit::NSWindowCollectionBehavior::IgnoresCycle
+            | objc2_app_kit::NSWindowCollectionBehavior::FullScreenAuxiliary,
+    );
+    native_window.setIgnoresMouseEvents(true);
+
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
 fn show_transition_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(TRANSITION_LABEL) {
-        window
-            .set_always_on_top(false)
-            .map_err(|error| error.to_string())?;
-        window
-            .set_always_on_bottom(true)
-            .map_err(|error| error.to_string())?;
+        configure_transition_window(&window)?;
         window.show().map_err(|error| error.to_string())?;
         return Ok(());
     }
@@ -386,6 +405,7 @@ fn show_transition_window(app: &AppHandle) -> Result<(), String> {
             .visible(false)
             .build()
             .map_err(|error| format!("Could not create wallpaper transition: {error}"))?;
+    configure_transition_window(&window)?;
 
     let monitors = window
         .available_monitors()

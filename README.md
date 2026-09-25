@@ -105,8 +105,8 @@ pnpm app:bundle:macos
 
 The first time Wallcarousel changes a wallpaper, macOS may ask for permission to
 control **System Events**. Allow it in **System Settings → Privacy & Security →
-Automation**. macOS animates slideshow changes through a fullscreen overlay
-before applying the new desktop picture. The transition includes additional
+Automation**. macOS animates slideshow changes through a desktop-level overlay
+behind normal application windows before applying the new desktop picture. The transition includes additional
 zoom, push, blur, pixelate, stripe, checker, corner, diagonal, and spiral
 effects.
 
@@ -256,8 +256,8 @@ when a larger preview is preferred.
 
 The **Slideshow** tab applies wallpapers on a timer and supports playlists,
 shuffle, pause/resume, and manual next wallpaper. Linux supports AWWW transition
-effects. macOS animates its selected transition through the fullscreen overlay
-before applying the new desktop picture.
+effects. macOS animates its selected transition through a desktop-level overlay
+behind normal application windows before applying the new desktop picture.
 
 The transition preview uses two selected wallpapers or sample landscapes. Change
 the transition, duration, or frame rate to replay the preview; **Replay preview**
