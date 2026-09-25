@@ -8,6 +8,12 @@
 .slideshow-content label { display: flex; flex-direction: column; gap: 8px; color: #c5c8be; }
 .slideshow-content input[type="number"], .slideshow-content select { width: 100%; padding: 10px; border-radius: 4px; }
 .slideshow-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.transition-effect-control { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.transition-picker { display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; gap: 6px; }
+.slideshow-content .transition-picker select { min-width: 0; }
+.transition-step { border: 1px solid #484d40; border-radius: 4px; background: #292e23; color: #e0e8cf; font-size: 22px; line-height: 1; cursor: pointer; }
+.transition-step:hover { background: #3b4430; }
+.transition-step:disabled { opacity: .45; cursor: default; }
 .slideshow-interval { display: flex; flex-direction: column; gap: 8px; }
 .slideshow-interval-inputs { display: grid; grid-template-columns: minmax(60px, 1fr) minmax(95px, 1.2fr); gap: 8px; }
 .slideshow-interval-inputs > * { min-width: 0; }

@@ -6,6 +6,7 @@ import './TransitionPreview.css'
 
 interface Props {
   autoPlay?: boolean
+  previewSignal?: number
   images: LibraryImage[]
   transition: string
   durationSeconds: number
@@ -23,10 +24,13 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
-export function TransitionPreview({ images, transition, durationSeconds, fps, autoPlay = true }: Props) {
+export function TransitionPreview({ images, transition, durationSeconds, fps, autoPlay = true, previewSignal = 0 }: Props) {
   const firstPath = images[0]?.path
   const secondPath = images[1]?.path
   const [assets, setAssets] = useState<Asset[]>([])
+  const previousPreviewSignal = useRef(previewSignal)
+  const playOnMount = previewSignal !== previousPreviewSignal.current
+  useEffect(() => { previousPreviewSignal.current = previewSignal }, [previewSignal])
   useEffect(() => {
     let cancelled = false
     const paths = [firstPath, secondPath].filter((path): path is string => Boolean(path))
@@ -46,16 +50,17 @@ export function TransitionPreview({ images, transition, durationSeconds, fps, au
   return (
     <aside className="transition-preview" aria-label="Transition preview">
       <div className="transition-preview-heading"><h2>Transition preview</h2><span>Demo</span></div>
-      <PreviewCanvas key={`${transition}:${durationSeconds}:${fps}:${firstPath}:${secondPath}`}
-        autoPlay={autoPlay} pair={pair} effect={transition} duration={valid ? durationSeconds : 2} fps={valid ? fps : 60} valid={valid} />
+      <PreviewCanvas key={`${transition}:${durationSeconds}:${fps}:${firstPath}:${secondPath}:${previewSignal}`}
+        autoPlay={autoPlay} playOnMount={playOnMount} pair={pair} effect={transition} duration={valid ? durationSeconds : 2} fps={valid ? fps : 60} valid={valid} />
       <p className="transition-preview-caption">{pair.every(Boolean) ? 'Using the first two wallpapers in your selection.' : 'Sample landscapes fill in when two wallpapers aren’t available.'}</p>
       <p className="transition-preview-caption">An approximation of the desktop effect. Previewing does not change your wallpaper.</p>
     </aside>
   )
 }
 
-function PreviewCanvas({ pair, effect, duration, fps, valid, autoPlay }: {
+function PreviewCanvas({ pair, effect, duration, fps, valid, autoPlay, playOnMount }: {
   autoPlay: boolean,
+  playOnMount: boolean,
   pair: (HTMLImageElement | null)[], effect: string, duration: number, fps: number, valid: boolean,
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -96,7 +101,7 @@ function PreviewCanvas({ pair, effect, duration, fps, valid, autoPlay }: {
       if (stopped) return
       if (!started) {
         context.drawImage(surfaces[0], 0, 0)
-        if (!valid || ((reducedMotion || !autoPlay) && replay === 0)) {
+        if (!valid || ((reducedMotion || !autoPlay) && replay === 0 && !playOnMount)) {
           setMessage(valid ? 'Press Replay to preview.' : 'Enter a valid duration and frame rate to preview.')
           return
         }
@@ -130,7 +135,7 @@ function PreviewCanvas({ pair, effect, duration, fps, valid, autoPlay }: {
       cancelAnimationFrame(frame)
       document.removeEventListener('visibilitychange', stopWhenHidden)
     }
-  }, [pair, effect, duration, fps, replay, reducedMotion, valid, autoPlay])
+  }, [pair, effect, duration, fps, replay, reducedMotion, valid, autoPlay, playOnMount])
 
   return <>
     <div className="transition-preview-screen"><canvas ref={canvasRef} width="1280" height="720" role="img" aria-label="Animated preview of the selected wallpaper transition" /></div>

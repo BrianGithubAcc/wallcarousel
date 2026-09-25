@@ -260,9 +260,10 @@ effects. macOS animates its selected transition through a desktop-level overlay
 behind normal application windows before applying the new desktop picture.
 
 The transition preview uses two selected wallpapers or sample landscapes. Change
-the transition, duration, or frame rate to replay the preview; **Replay preview**
-does not apply a wallpaper or save settings. Reduced-motion preferences are
-respected by waiting for an explicit replay.
+the transition, duration, or frame rate to replay the preview, or use the arrows
+beside the transition selector to play the previous or next effect. **Replay
+preview** does not apply a wallpaper or save settings. Reduced-motion preferences
+are respected by waiting for an explicit replay.
 
 ### Desktop overlay
 

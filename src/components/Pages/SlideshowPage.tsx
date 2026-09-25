@@ -33,6 +33,7 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
   const [config, setConfig] = useState<Config | null>(null)
   const [status, setStatus] = useState<Status | null>(null)
   const [busy, setBusy] = useState(false)
+  const [previewSignal, setPreviewSignal] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
   const [selectedIntervalUnit, setSelectedIntervalUnit] = useState<IntervalUnit | null>(() => {
@@ -82,6 +83,16 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
   function update(patch: Partial<Config>) {
     setConfig(current => current ? { ...current, ...patch } : current)
     setNotice('Unsaved changes')
+  }
+
+  function stepTransition(direction: -1 | 1) {
+    if (!config) return
+    const currentIndex = effects.indexOf(config.transition)
+    const nextIndex = currentIndex < 0
+      ? direction > 0 ? 0 : effects.length - 1
+      : (currentIndex + direction + effects.length) % effects.length
+    update({ transition: effects[nextIndex] })
+    setPreviewSignal(signal => signal + 1)
   }
 
   async function control(action: 'save' | 'start' | 'pause' | 'next') {
@@ -157,11 +168,16 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
                     </select>
                   </div>
                 </div>
-                <label>Transition effect
-                  <select value={config.transition} onChange={event => update({ transition: event.target.value })}>
-                    {effects.map(effect => <option key={effect} value={effect}>{transitionLabel(effect)}</option>)}
-                  </select>
-                </label>
+                <div className="transition-effect-control">
+                  <label htmlFor="slideshow-transition-effect">Transition effect</label>
+                  <div className="transition-picker">
+                    <button className="transition-step" type="button" aria-label="Play previous transition" title="Play previous transition" disabled={busy} onClick={() => stepTransition(-1)}>‹</button>
+                    <select id="slideshow-transition-effect" value={config.transition} onChange={event => update({ transition: event.target.value })}>
+                      {effects.map(effect => <option key={effect} value={effect}>{transitionLabel(effect)}</option>)}
+                    </select>
+                    <button className="transition-step" type="button" aria-label="Play next transition" title="Play next transition" disabled={busy} onClick={() => stepTransition(1)}>›</button>
+                  </div>
+                </div>
                 <label>Transition duration (seconds)
                   <input type="number" min="0.1" max="30" step="0.1" required value={config.durationSeconds} onChange={event => update({ durationSeconds: event.target.valueAsNumber })} />
                 </label>
@@ -183,7 +199,7 @@ export function SlideshowPage({ images, playlists, autoPreview = true }: { image
           </div>
           <p className="slideshow-hint">Playback continues in the tray and changes all displays. Settings are saved when you start, use Next wallpaper, or save. Save again after editing a playlist to update the running slideshow. Quitting stops playback; reopen this tab to start again.</p>
           </form>
-          <TransitionPreview autoPlay={autoPreview} images={sourceImages} transition={config.transition}
+          <TransitionPreview autoPlay={autoPreview} previewSignal={previewSignal} images={sourceImages} transition={config.transition}
             durationSeconds={config.durationSeconds} fps={config.fps} />
           </div>
 
