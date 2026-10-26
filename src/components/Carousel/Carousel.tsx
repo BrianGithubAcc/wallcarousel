@@ -16,6 +16,7 @@ import type {
 
 import {
   convertFileSrc,
+  invoke,
 } from '@tauri-apps/api/core'
 
 import * as THREE from 'three'
@@ -263,7 +264,7 @@ const OPEN_ARC_DISTANCE =
  * bounded by the cache below.
  */
 const MAX_PREVIEW_TEXTURE_SIZE =
-  2560
+  1280
 
 /*
  * Open paths retain the complete 21-slot
@@ -275,6 +276,9 @@ const MAX_PREVIEW_TEXTURE_SIZE =
  */
 const MAX_TEXTURE_CACHE =
   26
+
+const MAX_CONCURRENT_TEXTURE_LOADS =
+  3
 
 const SCROLL_SMOOTHING =
   8
@@ -1700,9 +1704,14 @@ function optimiseTexture(
   return texture
 }
 
-function loadPreviewTexture(
+async function loadPreviewTexture(
   path: string,
 ) {
+  const previewPath = await invoke<string>(
+    'generate_preview',
+    { path },
+  )
+
   return new Promise<
     THREE.Texture
   >(
@@ -1715,7 +1724,7 @@ function loadPreviewTexture(
 
       loader.load(
         convertFileSrc(
-          path,
+          previewPath,
         ),
 
         (
@@ -1842,6 +1851,17 @@ export function Carousel({
     >(
       new Set(),
     )
+
+  const textureQueueRef =
+    useRef<
+      Array<{
+        id: string
+        path: string
+      }>
+    >([])
+
+  const activeTextureLoadsRef =
+    useRef(0)
 
   const destroyedRef =
     useRef(
@@ -2191,6 +2211,10 @@ export function Carousel({
         continue
       }
 
+      if (!slot.mesh.visible) {
+        continue
+      }
+
       const item =
         currentItems[
           slot.imageIndex
@@ -2264,6 +2288,18 @@ export function Carousel({
       cache.delete(
         id,
       )
+
+      for (const slot of slotsRef.current) {
+        if (slot.imageIndex === null) {
+          continue
+        }
+
+        if (itemsRef.current[slot.imageIndex]?.id === id) {
+          slot.material.map = null
+          slot.material.needsUpdate = true
+          slot.textureOpacity = 0
+        }
+      }
     }
   }
 
@@ -2308,93 +2344,98 @@ export function Carousel({
       item.id,
     )
 
-    loadPreviewTexture(
-      item.path,
-    )
-      .then(
-        (
-          texture,
-        ) => {
+    textureQueueRef.current.push({
+      id: item.id,
+      path: item.path,
+    })
+
+    pumpTextureQueue()
+  }
+
+  function pumpTextureQueue() {
+    while (
+      activeTextureLoadsRef.current < MAX_CONCURRENT_TEXTURE_LOADS &&
+      textureQueueRef.current.length > 0
+    ) {
+      const queued = textureQueueRef.current.shift()
+
+      if (!queued || !pendingRef.current.has(queued.id)) {
+        continue
+      }
+
+      if (!itemsRef.current.some((item) => item.id === queued.id)) {
+        pendingRef.current.delete(queued.id)
+        continue
+      }
+
+      const stillVisible = slotsRef.current.some(
+        (slot) =>
+          slot.mesh.visible &&
+          slot.imageIndex !== null &&
+          itemsRef.current[slot.imageIndex]?.id === queued.id,
+      )
+
+      if (!stillVisible) {
+        pendingRef.current.delete(queued.id)
+        continue
+      }
+
+      activeTextureLoadsRef.current += 1
+
+      void loadPreviewTexture(queued.path)
+        .then((texture) => {
           texture.anisotropy =
             maxAnisotropyRef.current
 
           texture.needsUpdate =
             true
 
-          pendingRef.current.delete(
-            item.id,
-          )
-
           if (
-            destroyedRef.current
+            destroyedRef.current ||
+            !itemsRef.current.some((item) => item.id === queued.id)
           ) {
             texture.dispose()
-
             return
           }
 
           texturesRef.current.set(
-            item.id,
+            queued.id,
             {
               texture,
-              lastUsed:
-                performance.now(),
+              lastUsed: performance.now(),
             },
           )
 
-          /*
-           * A texture may finish loading after
-           * a slot was already assigned.
-           */
-          for (
-            const slot
-            of slotsRef.current
-          ) {
-            if (
-              slot.imageIndex ===
-              null
-            ) {
+          for (const slot of slotsRef.current) {
+            if (slot.imageIndex === null) {
               continue
             }
 
             const slotItem =
-              itemsRef.current[
-                slot.imageIndex
-              ]
+              itemsRef.current[slot.imageIndex]
 
-            if (
-              slotItem?.id ===
-              item.id
-            ) {
-              slot.material.map =
-                texture
-
-              slot.textureOpacity =
-                1
-
-              slot.material.needsUpdate =
-                true
+            if (slotItem?.id === queued.id) {
+              slot.material.map = texture
+              slot.textureOpacity = 1
+              slot.material.needsUpdate = true
             }
           }
 
           evictTextures()
-        },
-      )
-      .catch(
-        (
-          error,
-        ) => {
-          pendingRef.current.delete(
-            item.id,
-          )
-
+        })
+        .catch((error) => {
           console.warn(
             'Failed to load wallpaper texture:',
-            item.path,
+            queued.path,
             error,
           )
-        },
-      )
+        })
+        .finally(() => {
+          activeTextureLoadsRef.current -= 1
+          pendingRef.current.delete(queued.id)
+          pumpTextureQueue()
+        })
+    }
   }
 
   function assignSlotImage(
@@ -2402,6 +2443,7 @@ export function Carousel({
       RenderSlot,
     imageIndex:
       number,
+    loadTexture = true,
   ) {
     slot.imageIndex =
       imageIndex
@@ -2456,9 +2498,9 @@ export function Carousel({
     slot.material.needsUpdate =
       true
 
-    requestTexture(
-      imageIndex,
-    )
+    if (loadTexture) {
+      requestTexture(imageIndex)
+    }
   }
 
   /*
@@ -2499,13 +2541,6 @@ export function Carousel({
     itemsKey,
   ])
 
-  useEffect(() => {
-    const preloadCount = Math.min(items.length, MAX_TEXTURE_CACHE)
-    for (let index = 0; index < preloadCount; index += 1) {
-      requestTexture(index)
-    }
-  }, [itemsKey])
-
   /*
    * ==========================================================
    * THREE.JS RENDERER
@@ -2542,6 +2577,12 @@ export function Carousel({
         CAROUSEL_CAMERA_NEAR,
         CAROUSEL_CAMERA_FAR,
       )
+
+    const cameraFrustum =
+      new THREE.Frustum()
+
+    const viewProjectionMatrix =
+      new THREE.Matrix4()
 
     camera.position.set(
       0,
@@ -3265,6 +3306,15 @@ export function Carousel({
         )
       }
 
+      camera.updateMatrixWorld()
+
+      cameraFrustum.setFromProjectionMatrix(
+        viewProjectionMatrix.multiplyMatrices(
+          camera.projectionMatrix,
+          camera.matrixWorldInverse,
+        ),
+      )
+
       if (
         !compiled ||
         count <=
@@ -3580,6 +3630,7 @@ export function Carousel({
             assignSlotImage(
               slot,
               index,
+              false,
             )
           }
 
@@ -3651,6 +3702,14 @@ export function Carousel({
               slot.mesh.rotation.set(0, 0, 0)
             }
 
+            slot.mesh.updateMatrixWorld()
+            slot.mesh.visible =
+              cameraFrustum.intersectsObject(slot.mesh)
+
+            if (slot.mesh.visible) {
+              requestTexture(index)
+            }
+
             const brightness =
               brightnessAtPoint(
                 logical,
@@ -3681,11 +3740,8 @@ export function Carousel({
              * transparent rather than suddenly
              * producing a blank card.
              */
-            slot.mesh.visible =
-              true
-
             slot.mesh.frustumCulled =
-              false
+              true
           } catch {
             slot.mesh.visible =
               false
@@ -3874,6 +3930,12 @@ export function Carousel({
     return () => {
       destroyedRef.current =
         true
+
+      for (const queued of textureQueueRef.current) {
+        pendingRef.current.delete(queued.id)
+      }
+
+      textureQueueRef.current = []
 
       stopped =
         true

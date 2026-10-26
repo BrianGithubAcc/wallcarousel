@@ -79,10 +79,14 @@ async fn scan_wallpaper_directory(path: String) -> Result<Vec<String>, String> {
     .map_err(|error| format!("Wallpaper scan worker failed: {error}"))?
 }
 
-fn thumbnail_filename(source: &Path) -> String {
+fn thumbnail_filename(source: &Path, width: u32, height: u32) -> String {
     let mut hasher = Sha256::new();
 
     hasher.update(source.to_string_lossy().as_bytes());
+    if width != THUMBNAIL_WIDTH || height != THUMBNAIL_HEIGHT {
+        hasher.update(width.to_le_bytes());
+        hasher.update(height.to_le_bytes());
+    }
 
     if let Ok(metadata) = fs::metadata(source) {
         hasher.update(metadata.len().to_le_bytes());
@@ -117,12 +121,28 @@ fn thumbnail_directory(app: &AppHandle) -> Result<PathBuf, String> {
 
 #[command]
 async fn generate_thumbnail(app: AppHandle, path: String) -> Result<String, String> {
-    tauri::async_runtime::spawn_blocking(move || generate_thumbnail_blocking(&app, &path))
-        .await
-        .map_err(|error| format!("Thumbnail worker failed: {error}"))?
+    tauri::async_runtime::spawn_blocking(move || {
+        generate_thumbnail_blocking(&app, &path, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+    })
+    .await
+    .map_err(|error| format!("Thumbnail worker failed: {error}"))?
 }
 
-fn generate_thumbnail_blocking(app: &AppHandle, path: &str) -> Result<String, String> {
+#[command]
+async fn generate_preview(app: AppHandle, path: String) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        generate_thumbnail_blocking(&app, &path, 1280, 720)
+    })
+    .await
+    .map_err(|error| format!("Preview worker failed: {error}"))?
+}
+
+fn generate_thumbnail_blocking(
+    app: &AppHandle,
+    path: &str,
+    width: u32,
+    height: u32,
+) -> Result<String, String> {
     let source = Path::new(path);
 
     if !source.exists() {
@@ -147,7 +167,7 @@ fn generate_thumbnail_blocking(app: &AppHandle, path: &str) -> Result<String, St
 
     let directory = thumbnail_directory(app)?;
 
-    let filename = thumbnail_filename(source);
+    let filename = thumbnail_filename(source, width, height);
 
     let thumbnail = directory.join(filename);
 
@@ -165,7 +185,7 @@ fn generate_thumbnail_blocking(app: &AppHandle, path: &str) -> Result<String, St
     let image = image::open(source)
         .map_err(|error| format!("Could not decode '{}': {error}", source.display()))?;
 
-    let resized = image.resize(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, FilterType::Triangle);
+    let resized = image.resize(width, height, FilterType::Triangle);
 
     resized
         .save_with_format(&thumbnail, image::ImageFormat::Jpeg)
@@ -826,6 +846,7 @@ pub fn run() {
             toggle_render_fullscreen,
             scan_wallpaper_directory,
             generate_thumbnail,
+            generate_preview,
             get_wallpaper_transition,
             finish_wallpaper_transition,
             cancel_wallpaper_transition,
