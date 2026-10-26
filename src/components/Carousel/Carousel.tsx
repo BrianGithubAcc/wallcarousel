@@ -3064,11 +3064,14 @@ export function Carousel({
           assignSlotImage(
             slot,
             imageIndex,
+            false,
           )
         }
 
         slot.mesh.visible =
           true
+
+        requestTexture(imageIndex)
       }
 
       for (
