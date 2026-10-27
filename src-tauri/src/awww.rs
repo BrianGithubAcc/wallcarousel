@@ -471,14 +471,24 @@ mod macos {
         ) -> Result<(), String> {
             let (effect, duration_seconds, fps) = transition_settings(transition_args);
             let app = self.app.lock().ok().and_then(|current| current.clone());
-            let from_path = self
+            let mut from_path = self
                 .current_path
                 .lock()
                 .ok()
                 .and_then(|current| current.clone());
 
+            // On macOS this manager starts with no in-memory wallpaper path. Read
+            // the current desktop picture once so the first change after launch
+            // can transition from the wallpaper that is already on screen.
+            if from_path.is_none() && effect.as_deref().is_some_and(|effect| effect != "none") {
+                from_path = current_wallpaper_path();
+                if let (Some(path), Ok(mut current)) = (&from_path, self.current_path.lock()) {
+                    *current = Some(path.clone());
+                }
+            }
+
             if let (Some(app), Some(from_path), Some(effect)) = (app, from_path, effect) {
-                if effect != "none" {
+                if effect != "none" && from_path.is_file() {
                     crate::begin_wallpaper_transition(
                         &app,
                         &from_path,
@@ -560,6 +570,25 @@ mod macos {
             index += 2;
         }
         (effect, duration_seconds, fps)
+    }
+
+    fn current_wallpaper_path() -> Option<PathBuf> {
+        let script = "tell application \"System Events\"\n  set desktopPicture to picture of desktop 1\n  return POSIX path of (desktopPicture as alias)\nend tell\n";
+        let mut child = Command::new("/usr/bin/osascript")
+            .arg("-")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .ok()?;
+        child.stdin.take()?.write_all(script.as_bytes()).ok()?;
+        let output = child.wait_with_output().ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let path = String::from_utf8(output.stdout).ok()?;
+        let path = PathBuf::from(path.trim());
+        path.is_file().then_some(path)
     }
 
     fn escape_applescript_string(value: &str) -> String {

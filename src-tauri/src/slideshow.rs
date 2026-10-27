@@ -123,6 +123,8 @@ struct State {
     config: Config,
     running: bool,
     current: Option<usize>,
+    history: Vec<usize>,
+    history_position: Option<usize>,
     due: Option<Instant>,
     error: Option<String>,
     random: u64,
@@ -145,12 +147,85 @@ impl State {
         if count == 0 {
             return Err("Add images to the selected source first.".into());
         }
-        let mut next = next_index(self.current, count, self.config.shuffle, &mut self.random);
+        let mut replay_position = self
+            .history_position
+            .map(|position| position + 1)
+            .filter(|position| *position < self.history.len());
+        let mut next = if let Some(position) = replay_position {
+            self.history[position]
+        } else {
+            next_index(self.current, count, self.config.shuffle, &mut self.random)
+        };
         // Skip deleted files, but stop if no usable wallpaper remains.
         for _ in 0..count {
             let path = Path::new(&self.config.paths[next]);
             if path.is_file() {
                 awww.set_wallpaper_with_transition(path, &self.config.args())?;
+                if let Some(position) = replay_position {
+                    self.history_position = Some(position);
+                } else {
+                    self.history
+                        .truncate(self.history_position.map_or(0, |position| position + 1));
+                    self.history.push(next);
+                    self.history_position = Some(self.history.len() - 1);
+                }
+                self.current = Some(next);
+                self.error = None;
+                self.due = self
+                    .running
+                    .then(|| Instant::now() + Duration::from_secs(self.config.interval_seconds));
+                return Ok(());
+            }
+            if replay_position.is_some() {
+                replay_position = None;
+                next = next_index(self.current, count, self.config.shuffle, &mut self.random);
+                continue;
+            }
+            next = (next + 1) % count;
+        }
+        Err("None of the slideshow images are available. Update the source and try again.".into())
+    }
+    fn previous(&mut self, awww: &AwwwManager) -> Result<(), String> {
+        let Some(position) = self.history_position else {
+            return Err("There is no previous wallpaper yet.".into());
+        };
+        if position == 0 {
+            return Err("There is no previous wallpaper yet.".into());
+        }
+        let mut previous_position = position - 1;
+        while let Some(&index) = self.history.get(previous_position) {
+            let path = Path::new(&self.config.paths[index]);
+            if path.is_file() {
+                awww.set_wallpaper_with_transition(path, &self.config.args())?;
+                self.history_position = Some(previous_position);
+                self.current = Some(index);
+                self.error = None;
+                self.due = self
+                    .running
+                    .then(|| Instant::now() + Duration::from_secs(self.config.interval_seconds));
+                return Ok(());
+            }
+            if previous_position == 0 {
+                break;
+            }
+            previous_position -= 1;
+        }
+        Err("The previous wallpaper is no longer available.".into())
+    }
+    fn random_wallpaper(&mut self, awww: &AwwwManager) -> Result<(), String> {
+        let count = self.config.paths.len();
+        if count == 0 {
+            return Err("Add images to the selected source first.".into());
+        }
+        let mut next = next_index(self.current, count, true, &mut self.random);
+        for _ in 0..count {
+            let path = Path::new(&self.config.paths[next]);
+            if path.is_file() {
+                awww.set_wallpaper_with_transition(path, &self.config.args())?;
+                self.history
+                    .truncate(self.history_position.map_or(0, |position| position + 1));
+                self.history.push(next);
+                self.history_position = Some(self.history.len() - 1);
                 self.current = Some(next);
                 self.error = None;
                 self.due = self
@@ -209,6 +284,8 @@ impl Slideshow {
             config: loaded.unwrap_or_default(),
             running: false,
             current: None,
+            history: Vec::new(),
+            history_position: None,
             due: None,
             error,
             random: SystemTime::now()
@@ -235,8 +312,8 @@ impl Slideshow {
     fn status(&self) -> Result<Status, String> {
         Ok(self.state.lock().map_err(|e| e.to_string())?.status())
     }
-    fn control(&self, action: &str, config: Option<Config>) -> Result<Status, String> {
-        if !["save", "start", "pause", "next"].contains(&action) {
+    pub fn control(&self, action: &str, config: Option<Config>) -> Result<Status, String> {
+        if !["save", "start", "pause", "next", "previous", "random"].contains(&action) {
             return Err("Unknown slideshow action.".into());
         }
         let mut state = self.state.lock().map_err(|e| e.to_string())?;
@@ -256,6 +333,8 @@ impl Slideshow {
             fs::rename(temporary, &self.file).map_err(|e| e.to_string())?;
             if state.config.paths != config.paths {
                 state.current = None;
+                state.history.clear();
+                state.history_position = None;
             }
             state.config = config;
             state.error = None;
@@ -278,6 +357,16 @@ impl Slideshow {
                     state.running = true;
                 }
                 if let Err(error) = state.advance(&self.awww) {
+                    state.fail(error);
+                }
+            }
+            "previous" => {
+                if let Err(error) = state.previous(&self.awww) {
+                    state.error = Some(error);
+                }
+            }
+            "random" => {
+                if let Err(error) = state.random_wallpaper(&self.awww) {
                     state.fail(error);
                 }
             }

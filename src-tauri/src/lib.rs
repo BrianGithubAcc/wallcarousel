@@ -15,10 +15,9 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tauri::{
     command,
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
-    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, State, WebviewUrl,
-    WebviewWindowBuilder, WindowEvent,
+    AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder, WindowEvent,
 };
 
 const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "webp", "gif", "avif", "bmp", "svg"];
@@ -271,7 +270,17 @@ impl TransitionState {
             .is_some_and(|request| request.id == id && request.to_path == path.to_string_lossy()))
     }
 
-    fn clear(&self, id: u64) -> Result<(), String> {
+    fn matches_id(&self, id: u64) -> Result<bool, String> {
+        Ok(self
+            .inner
+            .lock()
+            .map_err(|_| "Transition state lock was poisoned".to_string())?
+            .pending
+            .as_ref()
+            .is_some_and(|request| request.id == id))
+    }
+
+    fn clear(&self, id: u64) -> Result<bool, String> {
         let mut state = self
             .inner
             .lock()
@@ -282,8 +291,9 @@ impl TransitionState {
             .is_some_and(|request| request.id == id)
         {
             state.pending = None;
+            return Ok(true);
         }
-        Ok(())
+        Ok(false)
     }
 }
 
@@ -381,6 +391,8 @@ fn show_overlay_window(app: &AppHandle) -> Result<(), String> {
 
 #[cfg(target_os = "macos")]
 fn configure_transition_window(window: &tauri::WebviewWindow) -> Result<(), String> {
+    let main_thread = objc2::MainThreadMarker::new()
+        .ok_or("Wallpaper transition must be configured on the main thread")?;
     let native_window = window
         .ns_window()
         .map_err(|error| format!("Could not access wallpaper transition window: {error}"))?;
@@ -389,7 +401,9 @@ fn configure_transition_window(window: &tauri::WebviewWindow) -> Result<(), Stri
         objc2_core_graphics::CGWindowLevelKey::DesktopWindowLevelKey,
     );
 
-    native_window.setLevel(desktop_level as _);
+    // The desktop picture can be reordered when macOS replaces it. Keep the
+    // transition above that surface, while remaining below desktop icons.
+    native_window.setLevel((desktop_level + 1) as _);
     native_window.setOpaque(false);
     native_window.setHasShadow(false);
     native_window.setCollectionBehavior(
@@ -400,14 +414,33 @@ fn configure_transition_window(window: &tauri::WebviewWindow) -> Result<(), Stri
     );
     native_window.setIgnoresMouseEvents(true);
 
+    // AppKit screen frames and window frames share logical, bottom-left-origin
+    // coordinates. Apply the whole rectangle at once: positioning a window and
+    // then resizing it can move its top edge, and physical monitor coordinates
+    // do not share one scale across Retina and external displays.
+    let screens = objc2_app_kit::NSScreen::screens(main_thread);
+    let mut screens = screens.iter();
+    let mut bounds = screens.next().ok_or("No displays are available")?.frame();
+    for screen in screens {
+        let frame = screen.frame();
+        let max_x = (bounds.origin.x + bounds.size.width).max(frame.origin.x + frame.size.width);
+        let max_y = (bounds.origin.y + bounds.size.height).max(frame.origin.y + frame.size.height);
+        bounds.origin.x = bounds.origin.x.min(frame.origin.x);
+        bounds.origin.y = bounds.origin.y.min(frame.origin.y);
+        bounds.size.width = max_x - bounds.origin.x;
+        bounds.size.height = max_y - bounds.origin.y;
+    }
+    if native_window.frame() != bounds {
+        native_window.setFrame_display(bounds, false);
+    }
+
     Ok(())
 }
 
 #[cfg(target_os = "macos")]
-fn show_transition_window(app: &AppHandle) -> Result<(), String> {
+fn prepare_transition_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(TRANSITION_LABEL) {
         configure_transition_window(&window)?;
-        window.show().map_err(|error| error.to_string())?;
         return Ok(());
     }
 
@@ -427,38 +460,14 @@ fn show_transition_window(app: &AppHandle) -> Result<(), String> {
             .map_err(|error| format!("Could not create wallpaper transition: {error}"))?;
     configure_transition_window(&window)?;
 
-    let monitors = window
-        .available_monitors()
-        .map_err(|error| format!("Could not enumerate displays: {error}"))?;
-    if let Some(first) = monitors.first() {
-        let mut min_x = first.position().x as i64;
-        let mut min_y = first.position().y as i64;
-        let mut max_x = min_x + first.size().width as i64;
-        let mut max_y = min_y + first.size().height as i64;
-        for monitor in monitors.iter().skip(1) {
-            min_x = min_x.min(monitor.position().x as i64);
-            min_y = min_y.min(monitor.position().y as i64);
-            max_x = max_x.max(monitor.position().x as i64 + monitor.size().width as i64);
-            max_y = max_y.max(monitor.position().y as i64 + monitor.size().height as i64);
-        }
-        window
-            .set_position(PhysicalPosition::new(min_x as i32, min_y as i32))
-            .map_err(|error| error.to_string())?;
-        window
-            .set_size(PhysicalSize::new(
-                (max_x - min_x) as u32,
-                (max_y - min_y) as u32,
-            ))
-            .map_err(|error| error.to_string())?;
-    }
     window
         .set_ignore_cursor_events(true)
         .map_err(|error| error.to_string())?;
-    window.show().map_err(|error| error.to_string())
+    Ok(())
 }
 
 #[cfg(not(target_os = "macos"))]
-fn show_transition_window(_app: &AppHandle) -> Result<(), String> {
+fn prepare_transition_window(_app: &AppHandle) -> Result<(), String> {
     Err("Native wallpaper transitions are only available on macOS".to_string())
 }
 
@@ -476,15 +485,8 @@ pub(crate) fn begin_wallpaper_transition(
     duration_seconds: f64,
     fps: u16,
 ) -> Result<(), String> {
-    let handle = app.clone();
-    let (sender, receiver) = mpsc::channel();
-    app.run_on_main_thread(move || {
-        let _ = sender.send(show_transition_window(&handle));
-    })
-    .map_err(|error| format!("Could not schedule wallpaper transition: {error}"))?;
-    receiver
-        .recv_timeout(Duration::from_secs(5))
-        .map_err(|error| format!("Could not prepare wallpaper transition: {error}"))??;
+    // Publish the request before constructing the webview so its first refresh
+    // can load the images while the native window is still hidden.
     let request = app.state::<TransitionState>().inner().begin(
         Some(from_path),
         to_path,
@@ -492,8 +494,82 @@ pub(crate) fn begin_wallpaper_transition(
         duration_seconds,
         fps,
     )?;
+    let handle = app.clone();
+    let (sender, receiver) = mpsc::channel();
+    app.run_on_main_thread(move || {
+        let _ = sender.send(prepare_transition_window(&handle));
+    })
+    .map_err(|error| format!("Could not schedule wallpaper transition: {error}"))?;
+    receiver
+        .recv_timeout(Duration::from_secs(5))
+        .map_err(|error| format!("Could not prepare wallpaper transition: {error}"))??;
     app.emit_to(TRANSITION_LABEL, TRANSITION_EVENT, request)
         .map_err(|error| format!("Could not start wallpaper transition: {error}"))
+}
+
+#[command]
+fn show_wallpaper_transition(
+    app: AppHandle,
+    state: State<'_, TransitionState>,
+    id: u64,
+) -> Result<Option<TransitionViewport>, String> {
+    if state.inner().matches_id(id)? {
+        let window = app
+            .get_webview_window(TRANSITION_LABEL)
+            .ok_or("Wallpaper transition window is unavailable")?;
+        // A hidden WKWebView may still report its old viewport after the native
+        // window was resized. Let it lay out while invisible before revealing
+        // the canvas, otherwise CSS stretches the old image to the new frame.
+        set_transition_window_alpha(&window, 0.0)?;
+        let size = window
+            .inner_size()
+            .map_err(|error| error.to_string())?
+            .to_logical::<f64>(window.scale_factor().map_err(|error| error.to_string())?);
+        window.show().map_err(|error| error.to_string())?;
+        return Ok(Some(TransitionViewport {
+            width: size.width,
+            height: size.height,
+        }));
+    }
+    Ok(None)
+}
+
+#[derive(Serialize)]
+struct TransitionViewport {
+    width: f64,
+    height: f64,
+}
+
+#[cfg(target_os = "macos")]
+fn set_transition_window_alpha(window: &tauri::WebviewWindow, alpha: f64) -> Result<(), String> {
+    let _main_thread = objc2::MainThreadMarker::new()
+        .ok_or("Wallpaper transition must be configured on the main thread")?;
+    let native_window = window
+        .ns_window()
+        .map_err(|error| format!("Could not access wallpaper transition window: {error}"))?;
+    let native_window: &objc2_app_kit::NSWindow = unsafe { &*native_window.cast() };
+    native_window.setAlphaValue(alpha);
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn set_transition_window_alpha(_window: &tauri::WebviewWindow, _alpha: f64) -> Result<(), String> {
+    Ok(())
+}
+
+#[command]
+fn reveal_wallpaper_transition(
+    app: AppHandle,
+    state: State<'_, TransitionState>,
+    id: u64,
+) -> Result<(), String> {
+    if state.inner().matches_id(id)? {
+        let window = app
+            .get_webview_window(TRANSITION_LABEL)
+            .ok_or("Wallpaper transition window is unavailable")?;
+        set_transition_window_alpha(&window, 1.0)?;
+    }
+    Ok(())
 }
 
 #[command]
@@ -522,8 +598,18 @@ async fn finish_wallpaper_transition(
     tauri::async_runtime::spawn_blocking(move || manager.set_wallpaper(&wallpaper))
         .await
         .map_err(|error| format!("Wallpaper transition worker failed: {error}"))??;
-    app.state::<TransitionState>().inner().clear(id)?;
-    hide_transition_window(&app);
+    Ok(())
+}
+
+#[command]
+fn close_wallpaper_transition(
+    app: AppHandle,
+    state: State<'_, TransitionState>,
+    id: u64,
+) -> Result<(), String> {
+    if state.inner().clear(id)? {
+        hide_transition_window(&app);
+    }
     Ok(())
 }
 
@@ -533,8 +619,9 @@ fn cancel_wallpaper_transition(
     state: State<'_, TransitionState>,
     id: u64,
 ) -> Result<(), String> {
-    state.inner().clear(id)?;
-    hide_transition_window(&app);
+    if state.inner().clear(id)? {
+        hide_transition_window(&app);
+    }
     Ok(())
 }
 
@@ -797,9 +884,40 @@ pub fn run() {
             let show_main =
                 MenuItem::with_id(app, "show_main", "Show Wallcarousel", true, None::<&str>)?;
 
+            let previous_wallpaper = MenuItem::with_id(
+                app,
+                "previous_wallpaper",
+                "Previous Wallpaper",
+                true,
+                None::<&str>,
+            )?;
+            let next_wallpaper =
+                MenuItem::with_id(app, "next_wallpaper", "Next Wallpaper", true, None::<&str>)?;
+            let random_wallpaper = MenuItem::with_id(
+                app,
+                "random_wallpaper",
+                "Random Wallpaper",
+                true,
+                None::<&str>,
+            )?;
+            let separator_before_wallpaper_controls = PredefinedMenuItem::separator(app)?;
+            let separator_before_quit = PredefinedMenuItem::separator(app)?;
+
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
-            let menu = Menu::with_items(app, &[&open_carousel, &show_main, &quit])?;
+            let menu = Menu::with_items(
+                app,
+                &[
+                    &open_carousel,
+                    &show_main,
+                    &separator_before_wallpaper_controls,
+                    &previous_wallpaper,
+                    &next_wallpaper,
+                    &random_wallpaper,
+                    &separator_before_quit,
+                    &quit,
+                ],
+            )?;
 
             let mut tray_builder = TrayIconBuilder::with_id("wallcarousel-tray")
                 .menu(&menu)
@@ -831,6 +949,31 @@ pub fn run() {
                         });
                     }
 
+                    "previous_wallpaper" | "next_wallpaper" | "random_wallpaper" => {
+                        let action = match event.id().as_ref() {
+                            "previous_wallpaper" => "previous",
+                            "random_wallpaper" => "random",
+                            _ => "next",
+                        };
+                        let service = app.state::<slideshow::Slideshow>().inner().clone();
+                        let action = action.to_owned();
+                        tauri::async_runtime::spawn(async move {
+                            match tauri::async_runtime::spawn_blocking(move || {
+                                service.control(&action, None)
+                            })
+                            .await
+                            {
+                                Ok(Ok(_)) => {}
+                                Ok(Err(error)) => {
+                                    eprintln!("[wallpaper] tray action failed: {error}")
+                                }
+                                Err(error) => {
+                                    eprintln!("[wallpaper] tray action worker failed: {error}")
+                                }
+                            }
+                        });
+                    }
+
                     "quit" => {
                         app.exit(0);
                     }
@@ -848,7 +991,10 @@ pub fn run() {
             generate_thumbnail,
             generate_preview,
             get_wallpaper_transition,
+            show_wallpaper_transition,
+            reveal_wallpaper_transition,
             finish_wallpaper_transition,
+            close_wallpaper_transition,
             cancel_wallpaper_transition,
             open_wallpaper_overlay,
             close_wallpaper_overlay,
